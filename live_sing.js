@@ -36,6 +36,7 @@ function init_cv(){
             {
                 name: items[0],
                 color: items[1],
+                character: items[2],
             }
         );
     }
@@ -71,7 +72,8 @@ function init_selecter(){
     const element = document.getElementById('cv_select');
     for (const cv of cvs){
         const op = document.createElement('option');
-        op.text = cv.name;
+        op.text = `${cv.name} (${cv.character} 役)`;
+        op.value = cv.name;
         op.setAttribute('style', `color: ${color[cv.name]};`);
         element.appendChild(op);
     }
@@ -140,7 +142,7 @@ function set_cosinger(cv_name){
     for (const cosinger of cosinger_count_lists){
         html += `
             <tr>
-                <td>${cosinger.name}</td>
+                <td><span style="color: ${color[cosinger.name]};" class="idol_name">${cosinger.name}</span></td>
                 <td>${cosinger.count}</td>
             </tr>
         `;
@@ -1530,57 +1532,56 @@ HOTCHPOTCH FESTIV@L!! 	DAY2	2017/10/8	25	THE IDOLM@STER		今井麻美, 長谷川
 10thLIVE TOUR Act-4 MILLION THE@TER!!!!	DAY2	2024/2/25	44	Thank You!		山崎はるか, 田所あずさ, Machico, 種田梨沙, 角元明日香, 大関英里, 藤井ゆきよ, 諏訪彩花, 麻倉もも, 小笠原早紀, 夏川椎菜, 中村温姫, 伊藤美来, 駒形友梨, 村川梨衣, 上田麗奈, 原嶋あかり, 小岩井ことり, 郁原ゆう, 雨宮天, 戸田めぐみ, 田村奈央, 木戸衣吹, 渡部優衣, 野村香菜子, 髙橋ミナミ, 稲川英里, 末柄里恵, 桐谷蝶々, 浜崎奈々, 阿部里果, 近藤唯, 山口立花子, 斉藤佑圭, 平山笑美, 渡部恵子, 愛美, 南早紀, 香里有佐
 `;
 const cv_data = `
-中村繪里子	#e22b30
-今井麻美	#2743d2
-長谷川明子	#b4e04b
-浅倉杏美	#d3dde9
-仁後真耶子	#f39939
-平田宏美	#515558
-釘宮理恵	#fd99e1
-原由実	#a6126a
-若林直美	#01a860
-たかはし智秋	#9238be
-下田麻美	#ffe43f
-沼倉愛美	#01adb9
-山崎はるか	#ea5b76
-田所あずさ	#6495cf
-Machico	#fed552
-種田梨沙	#92cfbb
-角元明日香	#9bce92
-大関英里	#58a6dc
-藤井ゆきよ	#454341
-諏訪彩花	#5abfb7
-麻倉もも	#ed90ba
-小笠原早紀	#eb613f
-夏川椎菜	#7e6ca8
-中村温姫	#fff03c
-伊藤美来	#c7b83c
-駒形友梨	#7f6575
-村川梨衣	#b54461
-上田麗奈	#e9739b
-原嶋あかり	#f7e78e
-小岩井ことり	#bee3e3
-郁原ゆう	#554171
-雨宮天	#afa690
-戸田めぐみ	#e25a9b
-田村奈央	#d1342c
-木戸衣吹	#f5ad3b
-渡部優衣	#788bc5
-野村香菜子	#f19557
-髙橋ミナミ	#f1becb
-稲川英里	#ee762e
-末柄里恵	#7278a8
-桐谷蝶々	#d7a96b
-浜崎奈々	#eceb70
-阿部里果	#99b7dc
-近藤唯	#b63b40
-山口立花子	#f19591
-斉藤佑圭	#aeb49c
-平山笑美	#6bb6b0
-渡部恵子	#efb864
-愛美	#d7385f
-南早紀	#ebe1ff
-香里有佐	#274079
-
+中村繪里子	#e22b30	天海春香
+今井麻美	#2743d2	如月千早
+長谷川明子	#b4e04b	星井美希
+浅倉杏美	#d3dde9	萩原雪歩
+仁後真耶子	#f39939	高槻やよい
+平田宏美	#515558	菊地真
+釘宮理恵	#fd99e1	水瀬伊織
+原由実	#a6126a	四条貴音
+若林直美	#01a860	秋月律子
+たかはし智秋	#9238be	三浦あずさ
+下田麻美	#ffe43f	双海亜美、双海真美
+沼倉愛美	#01adb9	我那覇響
+山崎はるか	#ea5b76	春日未来
+田所あずさ	#6495cf	最上静香
+Machico	#fed552	伊吹翼
+種田梨沙	#92cfbb	田中琴葉
+角元明日香	#9bce92	島原エレナ
+大関英里	#58a6dc	佐竹美奈子
+藤井ゆきよ	#454341	所恵美
+諏訪彩花	#5abfb7	徳川まつり
+麻倉もも	#ed90ba	箱崎星梨花
+小笠原早紀	#eb613f	野々原茜
+夏川椎菜	#7e6ca8	望月杏奈
+中村温姫	#fff03c	ロコ
+伊藤美来	#c7b83c	七尾百合子
+駒形友梨	#7f6575	高山紗代子
+村川梨衣	#b54461	松田亜利沙
+上田麗奈	#e9739b	高坂海美
+原嶋あかり	#f7e78e	中谷育
+小岩井ことり	#bee3e3	天空橋朋花
+郁原ゆう	#554171	エミリー
+雨宮天	#afa690	北沢志保
+戸田めぐみ	#e25a9b	舞浜歩
+田村奈央	#d1342c	木下ひなた
+木戸衣吹	#f5ad3b	矢吹可奈
+渡部優衣	#788bc5	横山奈緒
+野村香菜子	#f19557	二階堂千鶴
+髙橋ミナミ	#f1becb	馬場このみ
+稲川英里	#ee762e	大神環
+末柄里恵	#7278a8	豊川風花
+桐谷蝶々	#d7a96b	宮尾美也
+浜崎奈々	#eceb70	福田のり子
+阿部里果	#99b7dc	真壁瑞希
+近藤唯	#b63b40	篠宮可憐
+山口立花子	#f19591	百瀬莉緒
+斉藤佑圭	#aeb49c	永吉昴
+平山笑美	#6bb6b0	北上麗花
+渡部恵子	#efb864	周防桃子
+愛美	#d7385f	ジュリア
+南早紀	#ebe1ff	白石紬
+香里有佐	#274079	桜守歌織
 `;
 init();
