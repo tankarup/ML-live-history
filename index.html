@@ -1,0 +1,73 @@
+<html>
+<head>
+	<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>ミリオンライブ！ライブ歌唱検索</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <!-- JavaScript Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+<!-- CSS only -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+    <link rel="stylesheet" href="https://tankarup.github.io/million.css">
+    <style>
+        .idol_name {
+            text-shadow:
+                1px 1px 0 #333;
+
+        }
+    </style>
+    <title></title>
+
+</head>
+<body>
+    <nav class="navbar navbar-primary bg-primary text-light p-0" id="main_navbar">
+
+        <h1 class="h3">ミリオンライブ！ライブ歌唱検索</h1>
+
+        <div class="dropdown_container">
+            <select  class="form-select" id="cv_select" style="font-size:large; font-weight: bold;">
+            </select>
+        </div>
+
+
+    </nav>
+
+    <div class="container" style="padding:2px; width:100%;">
+        <div class="row">
+            <div class="col-8">
+                <div id="list">
+                </div>
+            </div>
+            <div class="col-2">
+                <div id="count">
+                </div>
+            </div>
+            <div class="col-2">
+                <div id="cosinger">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <ul>
+        <li>セトリデータは<a href="https://imas-db.jp/song/event/">アイマスDB ライブイベント関連情報</a>を使用しています。</li>
+        <li>集計対象のライブは以下の通りです<div id="live_list"></div></li>
+    </ul>
+
+
+
+
+
+
+
+
+
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+	<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <script src="live_sing.js"></script>
+</body>
+
+</html>
