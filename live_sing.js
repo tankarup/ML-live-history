@@ -74,7 +74,7 @@ function init_selecter(){
         const op = document.createElement('option');
         op.text = `${cv.name} (${cv.character} 役)`;
         op.value = cv.name;
-        op.setAttribute('style', `color: ${color[cv.name]};`);
+        op.setAttribute('style', `color: ${color[cv.name]}; font-weight: bold;`);
         element.appendChild(op);
     }
 
