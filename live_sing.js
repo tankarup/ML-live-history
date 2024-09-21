@@ -224,18 +224,27 @@ function set_list(cv_name){
             html += `
             <tr>
                 <td>
-                    ${song.live}, ${song.part}
+                    <div style="max-height:3em; overflow-y: scroll;">
+                        <span style="font-size: small;">
+                            ${song.live}, ${song.part}
+                        </span>
+                    </div>
                 </td>
                 <td>
-                    ${song.date}
+                        <span style="font-size: small;">
+                            ${song.date}
+                        </span>
                 </td>
                 <td style="font-size: large; font-weight: bold;">
                     ${song.name}
                 </td>
                 <td>
-                    <span class="idol_name">
-                        ${html_singers}
-                    </span>
+                    <div style="max-height:3em; overflow-y: scroll;">
+                        <span class="idol_name">
+                            ${html_singers}
+                        </span>
+                    </div>
+
                 </td>
             </tr>
         `;
