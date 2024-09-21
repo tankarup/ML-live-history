@@ -69,34 +69,39 @@ function init_setori(){
 }
 
 function init_selecter(){
-    const element = document.getElementById('cv_select');
-    for (const cv of cvs){
-        const op = document.createElement('option');
-        op.text = `${cv.name} (${cv.character} 役)`;
-        op.value = cv.name;
-        op.setAttribute('style', `color: ${color[cv.name]}; font-weight: bold;`);
-        element.appendChild(op);
+    let element = [];
+    element[0] = document.getElementById('cv_select1');
+    element[1] = document.getElementById('cv_select2');
+    for (let i = 0; i<2; i++){
+        for (const cv of cvs){
+            const op = document.createElement('option');
+            op.text = `${cv.name} (${cv.character} 役)`;
+            op.value = cv.name;
+            op.setAttribute('style', `color: ${color[cv.name]}; font-weight: bold;`);
+            element[i].appendChild(op);
+        }
+    
+        {
+            const op = document.createElement('option');
+            op.text = '全員';
+            //op.setAttribute('style', `color: ${color[cv.name]};`);
+            element[i].appendChild(op);
+        }
+    
+        element[i].addEventListener('change', (event) => {
+            set_content();
+        });
+    
+
     }
-
-    {
-        const op = document.createElement('option');
-        op.text = '全員';
-        //op.setAttribute('style', `color: ${color[cv.name]};`);
-        element.appendChild(op);
-    }
-
-    element.addEventListener('change', (event) => {
-        set_content(event.target.value);
-    });
-
     //ランダム選択
-    element.value =  cvs[Math.floor(Math.random() * cvs.length)].name;
-    set_content(element.value);
-
+    element[0].value =  cvs[Math.floor(Math.random() * cvs.length)].name;
+    element[1].value =  '全員';
+    set_content();
 }
-function set_content(cv_name){
-    set_list(cv_name);
-    set_summary(cv_name);
+function set_content(){
+    set_list();
+    set_summary();
 }
 
 function is_singer_included(text, name){
@@ -106,16 +111,19 @@ function is_singer_included(text, name){
     }
     return (text.indexOf(name) > -1)
 }
-function set_summary(cv_name){
-    set_count(cv_name);
-    set_cosinger(cv_name);
+function set_summary(){
+    set_count();
+    set_cosinger();
 }
 
-function set_cosinger(cv_name){
+function set_cosinger(){
+    const cv1 = document.getElementById('cv_select1').value;
+    const cv2 = document.getElementById('cv_select2').value;
+
     let cosinger_count = {};
 
     for (const song of setori){
-        if (is_singer_included(song.singers_text, cv_name)){
+        if (is_singer_included(song.singers_text, cv1) && is_singer_included(song.singers_text, cv2)){
             for (const cv of cvs){
                 if(is_singer_included(song.singers_text, cv.name)){
                     cosinger_count[cv.name] = (cosinger_count[cv.name] || 0) + 1;
@@ -152,13 +160,14 @@ function set_cosinger(cv_name){
     const element = document.getElementById('cosinger');
     element.innerHTML = html;
 }
-function set_count(cv_name){
-    
+function set_count(){
+    const cv1 = document.getElementById('cv_select1').value;
+    const cv2 = document.getElementById('cv_select2').value;
 
     let song_count = {};
 
     for (const song of setori){
-        if (is_singer_included(song.singers_text, cv_name)){
+        if (is_singer_included(song.singers_text, cv1) && is_singer_included(song.singers_text, cv2)){
             song_count[song.name] = (song_count[song.name] || 0) + 1;
         }
     }
@@ -209,14 +218,17 @@ function text_to_html_singers(text_singers){
     }
     return html;
 }
-function set_list(cv_name){
+function set_list(){
+    const cv1 = document.getElementById('cv_select1').value;
+    const cv2 = document.getElementById('cv_select2').value;
+
     const element = document.getElementById('list');
     
     let html='<h2 class="bg-info text-light h4">歌唱履歴</h2>';
     html+='<table class="table table-striped">';
 
     for (const song of setori){
-        if (is_singer_included(song.singers_text, cv_name)){
+        if (is_singer_included(song.singers_text, cv1) && is_singer_included(song.singers_text, cv2)){
 
             
             let html_singers = text_to_html_singers(song.singers_text);
@@ -262,24 +274,215 @@ function html_cv(cv_name){
 }
 
 const data = `
-MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	昼の部	2013/12/29	1	Legend Girls!!		田所あずさ, 麻倉もも, 伊藤美来
-MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	昼の部	2013/12/29	2	素敵なキセキ		山崎はるか
-MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	昼の部	2013/12/29	3	オリジナル声になって		木戸衣吹
-MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	昼の部	2013/12/29	4	トキメキの音符になって		麻倉もも
-MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	昼の部	2013/12/29	5	Sentimental Venus		山崎はるか, 雨宮天, 木戸衣吹
-MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	昼の部	2013/12/29	6	透明なプロローグ		伊藤美来
-MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	昼の部	2013/12/29	7	Precious Grain		田所あずさ
-MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	昼の部	2013/12/29	8	ライアー・ルージュ		雨宮天
-MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	昼の部	2013/12/29	9	Thank You!		山崎はるか, 田所あずさ, 麻倉もも, 雨宮天, 伊藤美来, 木戸衣吹
-MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	夜の部	2013/12/29	1	PRETTY DREAMER		山崎はるか, 夏川椎菜, 渡部優衣
-MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	夜の部	2013/12/29	2	恋のLesson初級編		Machico
-MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	夜の部	2013/12/29	3	トキメキの音符になって		麻倉もも
-MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	夜の部	2013/12/29	4	ハッピー☆ラッキー☆ジェットマシーン		渡部優衣
-MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	夜の部	2013/12/29	5	Marionetteは眠らない		田所あずさ, 麻倉もも, Machico
-MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	夜の部	2013/12/29	6	Happy Darling		夏川椎菜
-MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	夜の部	2013/12/29	7	素敵なキセキ		山崎はるか
-MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	夜の部	2013/12/29	8	Precious Grain		田所あずさ
-MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	夜の部	2013/12/29	9	Thank You!		山崎はるか, 田所あずさ, 麻倉もも, 夏川椎菜, Machico, 渡部優衣
+LTPリリイベ	LTP03	2013/7/13	1	キラメキ進行形		中村繪里子
+LTPリリイベ	LTP03	2013/7/13	2	素敵なキセキ		山崎はるか
+LTPリリイベ	LTP03	2013/7/13	3	トキメキの音符になって		麻倉もも
+LTPリリイベ	LTP03	2013/7/13	4	透明なプロローグ		伊藤美来
+LTPリリイベ	LTP03	2013/7/13	5	Precious Grain		田所あずさ
+LTPリリイベ	LTP03	2013/7/13	6	Thank You!		中村繪里子、麻倉もも、田所あずさ、山崎はるか、伊藤美来
+LTPリリイベ	LTP04	2013/8/11	1	アフタースクールパーリータイム		藤井ゆきよ
+LTPリリイベ	LTP04	2013/8/11	2	トキメキの音符になって		麻倉もも
+LTPリリイベ	LTP04	2013/8/11	3	ライアー・ルージュ		雨宮天
+LTPリリイベ	LTP04	2013/8/11	4	Precious Grain		田所あずさ
+LTPリリイベ	LTP04	2013/8/11	5	Snow White		今井麻美
+LTPリリイベ	LTP04	2013/8/11	6	Thank You!		今井麻美、藤井ゆきよ、雨宮天、田所あずさ、麻倉もも
+ローソンスペシャルパーティー		2013/8/11	1	READY!!	M＠STER VERSION	仁後真耶子、原由実、今井麻美
+ローソンスペシャルパーティー		2013/8/11	2	キラメキラリ		仁後真耶子、今井麻美、原由実
+ローソンスペシャルパーティー		2013/8/11	3	ハッピー☆ラッキー☆ジェットマシーン		渡部優衣
+ローソンスペシャルパーティー		2013/8/11	4	微笑み日和		郁原ゆう
+ローソンスペシャルパーティー		2013/8/11	5	フラワーガール		原由実
+ローソンスペシャルパーティー		2013/8/11	6	ライアー・ルージュ		雨宮天
+ローソンスペシャルパーティー		2013/8/11	7	Snow White		今井麻美
+ローソンスペシャルパーティー		2013/8/11	8	Thank You!		雨宮天、渡部優衣、郁原ゆう
+台北漫画博覧会2013		2013/8/17	1	ハッピー☆ラッキー☆ジェットマシーン		渡部優衣
+台北漫画博覧会2013		2013/8/17	2	Thank You!		渡部優衣、山口立花子
+台北漫画博覧会2013		2013/8/18	1	ハッピー☆ラッキー☆ジェットマシーン		渡部優衣
+台北漫画博覧会2013		2013/8/18	2	Thank You!		渡部優衣、山口立花子
+Animelo Summer Live 2013		2013/8/24	1	THE IDOLM@STER	2nd-mix(GAME Ver)	中村繪里子、今井麻美、若林直美、沼倉愛美、山崎はるか、田所あずさ
+Animelo Summer Live 2013		2013/8/24	2	READY!!	M＠STER VERSION	中村繪里子、今井麻美、若林直美、沼倉愛美、山崎はるか、田所あずさ
+Animelo Summer Live 2013		2013/8/24	3	Thank You!		中村繪里子、今井麻美、若林直美、沼倉愛美、山崎はるか、田所あずさ
+LTPリリイベ	LTP05	2013/9/14	1	素敵なキセキ		山崎はるか
+LTPリリイベ	LTP05	2013/9/14	2	トキメキの音符になって		麻倉もも
+LTPリリイベ	LTP05	2013/9/14	3	Precious Grain		田所あずさ
+LTPリリイベ	LTP05	2013/9/14	4	微笑み日和		郁原ゆう
+LTPリリイベ	LTP05	2013/9/14	5	Be My Boy		山口立花子
+LTPリリイベ	LTP05	2013/9/14	6	Thank You!		山崎はるか、麻倉もも、田所あずさ、郁原ゆう、山口立花子
+LTPリリイベ	LTP06	2013/10/13	1	恋のLesson初級編		Machico
+LTPリリイベ	LTP06	2013/10/13	2	Legend Girls!!		麻倉もも
+LTPリリイベ	LTP06	2013/10/13	3	PRETTY DREAMER		山崎はるか
+LTPリリイベ	LTP06	2013/10/13	4	FIND YOUR WIND!		平山笑美
+LTPリリイベ	LTP06	2013/10/13	5	追憶のサンドグラス		長谷川明子
+LTPリリイベ	LTP06	2013/10/13	6	Thank You!		長谷川明子、山崎はるか、麻倉もも、平山笑美、Machico
+LTPリリイベ	LTP07	2013/11/10	1	君想いBirthday		駒形友梨
+LTPリリイベ	LTP07	2013/11/10	2	PRETTY DREAMER		山崎はるか
+LTPリリイベ	LTP07	2013/11/10	3	Legend Girls!!		麻倉もも
+LTPリリイベ	LTP07	2013/11/10	4	ちいさな恋の足音		近藤唯
+LTPリリイベ	LTP07	2013/11/10	5	嘆きのFRACTION		たかはし智秋
+LTPリリイベ	LTP07	2013/11/10	6	Thank You!		たかはし智秋、山崎はるか、麻倉もも、近藤唯、駒形友梨
+LTPリリイベ	LTP08	2013/12/8	1	ホップ♪ステップ♪レインボウ♪		稲川英里
+LTPリリイベ	LTP08	2013/12/8	2	素敵なキセキ		山崎はるか
+LTPリリイベ	LTP08	2013/12/8	3	トキメキの音符になって		麻倉もも
+LTPリリイベ	LTP08	2013/12/8	4	オリジナル声になって		木戸衣吹
+LTPリリイベ	LTP08	2013/12/8	5	Precious Grain		田所あずさ
+LTPリリイベ	LTP08	2013/12/8	6	Thank You!		山崎はるか、田所あずさ、麻倉もも、稲川英里、木戸衣吹
+MILLION RADIO! SPECIAL PARTY	01 昼の部	2013/12/29	1	Legend Girls!!		田所あずさ, 麻倉もも, 伊藤美来
+MILLION RADIO! SPECIAL PARTY	01 昼の部	2013/12/29	2	素敵なキセキ		山崎はるか
+MILLION RADIO! SPECIAL PARTY	01 昼の部	2013/12/29	3	オリジナル声になって		木戸衣吹
+MILLION RADIO! SPECIAL PARTY	01 昼の部	2013/12/29	4	トキメキの音符になって		麻倉もも
+MILLION RADIO! SPECIAL PARTY	01 昼の部	2013/12/29	5	Sentimental Venus		山崎はるか, 雨宮天, 木戸衣吹
+MILLION RADIO! SPECIAL PARTY	01 昼の部	2013/12/29	6	透明なプロローグ		伊藤美来
+MILLION RADIO! SPECIAL PARTY	01 昼の部	2013/12/29	7	Precious Grain		田所あずさ
+MILLION RADIO! SPECIAL PARTY	01 昼の部	2013/12/29	8	ライアー・ルージュ		雨宮天
+MILLION RADIO! SPECIAL PARTY	01 昼の部	2013/12/29	9	Thank You!		山崎はるか, 田所あずさ, 麻倉もも, 雨宮天, 伊藤美来, 木戸衣吹
+MILLION RADIO! SPECIAL PARTY	01 夜の部	2013/12/29	1	PRETTY DREAMER		山崎はるか, 夏川椎菜, 渡部優衣
+MILLION RADIO! SPECIAL PARTY	01 夜の部	2013/12/29	2	恋のLesson初級編		Machico
+MILLION RADIO! SPECIAL PARTY	01 夜の部	2013/12/29	3	トキメキの音符になって		麻倉もも
+MILLION RADIO! SPECIAL PARTY	01 夜の部	2013/12/29	4	ハッピー☆ラッキー☆ジェットマシーン		渡部優衣
+MILLION RADIO! SPECIAL PARTY	01 夜の部	2013/12/29	5	Marionetteは眠らない		田所あずさ, 麻倉もも, Machico
+MILLION RADIO! SPECIAL PARTY	01 夜の部	2013/12/29	6	Happy Darling		夏川椎菜
+MILLION RADIO! SPECIAL PARTY	01 夜の部	2013/12/29	7	素敵なキセキ		山崎はるか
+MILLION RADIO! SPECIAL PARTY	01 夜の部	2013/12/29	8	Precious Grain		田所あずさ
+MILLION RADIO! SPECIAL PARTY	01 夜の部	2013/12/29	9	Thank You!		山崎はるか, 田所あずさ, 麻倉もも, 夏川椎菜, Machico, 渡部優衣
+LTPリリイベ	LTP09	2014/1/11	1	スマイルいちばん		大関英里
+LTPリリイベ	LTP09	2014/1/11	2	あのね、聞いてほしいことがあるんだ		田村奈央
+LTPリリイベ	LTP09	2014/1/11	3	チョー↑元気Show☆アイドルch@ng!		村川梨衣
+LTPリリイベ	LTP09	2014/1/11	4	トキメキの音符になって		麻倉もも
+LTPリリイベ	LTP09	2014/1/11	5	素敵なキセキ		山崎はるか
+LTPリリイベ	LTP09	2014/1/11	6	Thank You!		山崎はるか、麻倉もも、大関英里、田村奈央、村川梨衣
+LTPリリイベ	LTP10	2014/2/15	1	ココロ☆エクササイズ		上田麗奈
+LTPリリイベ	LTP10	2014/2/15	2	素敵なキセキ		山崎はるか
+LTPリリイベ	LTP10	2014/2/15	3	トキメキの音符になって		麻倉もも
+LTPリリイベ	LTP10	2014/2/15	4	Precious Grain		田所あずさ
+LTPリリイベ	LTP10	2014/2/15	5	恋花		原由実
+LTPリリイベ	LTP10	2014/2/15	6	Thank You!		原由実、山崎はるか、田所あずさ、麻倉もも、上田麗奈
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	1	THE IDOLM@STER		中村繪里子, 長谷川明子, 今井麻美, 仁後真耶子, 浅倉杏美, 平田宏美, 下田麻美, 釘宮理恵, たかはし智秋, 原由実, 沼倉愛美, 滝田樹里, 福原綾香, 松嵜麗, 佳村はるか, 大橋彩香, 原紗友里, 青木瑠璃子, 麻倉もも, 田所あずさ, 山崎はるか, 渡部優衣, 木戸衣吹, Machico, 伊藤美来, 夏川椎菜, 雨宮天, 藤井ゆきよ, 愛美
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	2	READY!!		中村繪里子, 長谷川明子, 今井麻美, 仁後真耶子, 浅倉杏美, 平田宏美, 下田麻美, 釘宮理恵, たかはし智秋, 原由実, 沼倉愛美, 滝田樹里
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	3	CHANGE!!!!		中村繪里子, 仁後真耶子, 浅倉杏美, たかはし智秋
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	4	ラムネ色 青春		長谷川明子, 平田宏美, 釘宮理恵, 滝田樹里
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	5	Rebellion		沼倉愛美
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	6	Mythmaker		たかはし智秋
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	7	ビジョナリー		下田麻美
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	8	乙女よ大志を抱け！！		中村繪里子
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	9	The world is all one !!		中村繪里子, 大橋彩香, 山崎はるか
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	10	アタシポンコツアンドロイド		松嵜麗, 大橋彩香
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	11	TOKIMEKIエスカレート		佳村はるか
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	12	ましゅまろ☆キッス		松嵜麗
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	13	ミツボシ☆☆★		原紗友里
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	14	MEGARE!		長谷川明子, 原紗友里, Machico
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	15	Blue Symphony		田所あずさ, Machico, 雨宮天, 藤井ゆきよ
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	16	ライアー・ルージュ		雨宮天
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	17	流星群		愛美
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	18	PRETTY DREAMER		山崎はるか, 渡部優衣, 夏川椎菜
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	19	ALRIGHT*		浅倉杏美
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	20	自転車		平田宏美
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	21	edeN		長谷川明子
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	22	自分REST@RT		今井麻美, 下田麻美, 原由実, 沼倉愛美
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	23	キラメキラリ		仁後真耶子, 釘宮理恵, 松嵜麗, 山崎はるか
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	24	ラ♥ブ♥リ		たかはし智秋, 佳村はるか, 渡部優衣
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	25	私はアイドル♥		中村繪里子, 浅倉杏美, 滝田樹里, Machico
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	26	エージェント夜を往く		平田宏美, 下田麻美, 青木瑠璃子
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	27	arcadia		長谷川明子, 今井麻美, 雨宮天
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	28	Alice or Guilty		たかはし智秋, 沼倉愛美, 福原綾香, 愛美
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	29	“HELLO!!”		原由実, 大橋彩香, 夏川椎菜
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	30	GO MY WAY!!		長谷川明子, 浅倉杏美, 麻倉もも, 田所あずさ
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	31	待ち受けプリンス		平田宏美, 釘宮理恵, 藤井ゆきよ
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	32	i		今井麻美, 下田麻美, 原紗友里, 木戸衣吹
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	33	いっぱいいっぱい		仁後真耶子, 原由実
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	34	Vault That Borderline!		中村繪里子, 沼倉愛美, 伊藤美来
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	35	空		滝田樹里, 中村繪里子, 長谷川明子, 今井麻美, 仁後真耶子, 浅倉杏美, 平田宏美, 下田麻美, 釘宮理恵, たかはし智秋, 原由実, 沼倉愛美, 滝田樹里, 福原綾香, 松嵜麗, 佳村はるか, 大橋彩香, 原紗友里, 青木瑠璃子, 麻倉もも, 田所あずさ, 山崎はるか, 渡部優衣, 木戸衣吹, Machico, 伊藤美来, 夏川椎菜, 雨宮天, 藤井ゆきよ, 愛美
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	36	お願い！シンデレラ		福原綾香, 松嵜麗, 佳村はるか, 大橋彩香, 原紗友里, 青木瑠璃子
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	37	Orange Sapphire		松嵜麗, 原紗友里
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	38	Nation Blue		福原綾香, 青木瑠璃子
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	39	Twilight Sky		青木瑠璃子
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	40	S(mile)ING!		大橋彩香
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	41	Never say never		福原綾香
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	42	MUSIC♪		今井麻美, 福原綾香, 田所あずさ
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	43	アフタースクールパーリータイム		藤井ゆきよ
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	44	Happy Darling		夏川椎菜
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	45	透明なプロローグ		伊藤美来
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	46	Sentimental Venus		釘宮理恵, 麻倉もも, 木戸衣吹, 伊藤美来, 愛美
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	47	my song		釘宮理恵
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	48	チクタク		仁後真耶子
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	49	恋花		原由実
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	50	君が選ぶ道		滝田樹里
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	51	約束		今井麻美
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	52	Thank You!		麻倉もも, 田所あずさ, 山崎はるか, 渡部優衣, 木戸衣吹, Machico, 伊藤美来, 夏川椎菜, 雨宮天, 藤井ゆきよ, 愛美
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	53	M@STERPIECE		中村繪里子, 長谷川明子, 今井麻美, 仁後真耶子, 浅倉杏美, 平田宏美, 下田麻美, 釘宮理恵, たかはし智秋, 原由実, 沼倉愛美, 滝田樹里, 福原綾香, 松嵜麗, 佳村はるか, 大橋彩香, 原紗友里, 青木瑠璃子, 麻倉もも, 田所あずさ, 山崎はるか, 渡部優衣, 木戸衣吹, Machico, 伊藤美来, 夏川椎菜, 雨宮天, 藤井ゆきよ, 愛美
+M@STERS OF IDOL WORLD!!2014	DAY1	2014/2/22	54	IDOL POWER RAINBOW		中村繪里子, 長谷川明子, 今井麻美, 仁後真耶子, 浅倉杏美, 平田宏美, 下田麻美, 釘宮理恵, たかはし智秋, 原由実, 沼倉愛美, 滝田樹里, 福原綾香, 松嵜麗, 佳村はるか, 大橋彩香, 原紗友里, 青木瑠璃子, 麻倉もも, 田所あずさ, 山崎はるか, 渡部優衣, 木戸衣吹, Machico, 伊藤美来, 夏川椎菜, 雨宮天, 藤井ゆきよ, 愛美
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	1	THE IDOLM@STER		中村繪里子, 長谷川明子, 今井麻美, 仁後真耶子, 浅倉杏美, 平田宏美, 下田麻美, 釘宮理恵, たかはし智秋, 原由実, 沼倉愛美, 滝田樹里, 福原綾香, 松嵜麗, 佳村はるか, 大橋彩香, 原紗友里, 青木瑠璃子, 五十嵐裕美, 山本希望, 高森奈津美, 黒沢ともよ, 三宅麻理恵, 麻倉もも, 田所あずさ, 山崎はるか, 渡部優衣, 木戸衣吹, Machico
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	2	READY!!		中村繪里子, 長谷川明子, 今井麻美, 仁後真耶子, 浅倉杏美, 平田宏美, 下田麻美, 釘宮理恵, たかはし智秋, 原由実, 沼倉愛美, 滝田樹里
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	3	CHANGE!!!!		中村繪里子, 仁後真耶子, 浅倉杏美, たかはし智秋
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	4	ラムネ色 青春		長谷川明子, 平田宏美, 釘宮理恵, 滝田樹里
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	5	Rebellion		沼倉愛美
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	6	Mythmaker		たかはし智秋
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	7	ビジョナリー		下田麻美
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	8	乙女よ大志を抱け！！		中村繪里子
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	9	The world is all one !!		中村繪里子, 大橋彩香, 山崎はるか
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	10	PRETTY DREAMER		山崎はるか, 渡部優衣
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	11	トキメキの音符になって		麻倉もも
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	12	オリジナル声になって		木戸衣吹
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	13	Blue Symphony		田所あずさ, Machico
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	14	MEGARE!		長谷川明子, 原紗友里, Machico
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	15	Orange Sapphire		佳村はるか, 原紗友里, 山本希望, 三宅麻理恵
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	16	あんずのうた		五十嵐裕美
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	17	おねだり Shall We〜？		高森奈津美
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	18	メルヘンデビュー		三宅麻理恵
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	19	ALRIGHT*		浅倉杏美
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	20	自転車		平田宏美
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	21	edeN		長谷川明子
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	22	自分REST@RT		今井麻美, 下田麻美, 原由実, 沼倉愛美
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	23	キラメキラリ		仁後真耶子, 釘宮理恵, 松嵜麗, 山崎はるか
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	24	ラ♥ブ♥リ		たかはし智秋, 佳村はるか, 渡部優衣
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	25	私はアイドル♥		中村繪里子, 浅倉杏美, 滝田樹里, Machico
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	26	エージェント夜を往く		平田宏美, 下田麻美, 青木瑠璃子
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	27	arcadia		長谷川明子, 今井麻美, 黒沢ともよ
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	28	Alice or Guilty		たかはし智秋, 沼倉愛美, 福原綾香, 三宅麻理恵
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	29	“HELLO!!”		戸松遥
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	30	GO MY WAY!!		長谷川明子, 浅倉杏美, 原由実, 麻倉もも, 田所あずさ, 大橋彩香, 高森奈津美
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	31	待ち受けプリンス		平田宏美, 釘宮理恵, 山本希望
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	32	i		今井麻美, 下田麻美, 原紗友里, 木戸衣吹
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	33	いっぱいいっぱい		仁後真耶子, 原由実
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	34	Vault That Borderline!		中村繪里子, 沼倉愛美, 五十嵐裕美
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	35	空		滝田樹里, 中村繪里子, 長谷川明子, 今井麻美, 仁後真耶子, 浅倉杏美, 平田宏美, 下田麻美, 釘宮理恵, たかはし智秋, 原由実, 沼倉愛美, 滝田樹里, 福原綾香, 松嵜麗, 佳村はるか, 大橋彩香, 原紗友里, 青木瑠璃子, 五十嵐裕美, 山本希望, 高森奈津美, 黒沢ともよ, 三宅麻理恵, 麻倉もも, 田所あずさ, 山崎はるか, 渡部優衣, 木戸衣吹, Machico
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	36	Thank You!		麻倉もも, 田所あずさ, 山崎はるか, 渡部優衣, 木戸衣吹, Machico
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	37	お願い！シンデレラ		福原綾香, 松嵜麗, 佳村はるか, 大橋彩香, 原紗友里, 青木瑠璃子, 五十嵐裕美, 山本希望, 高森奈津美, 黒沢ともよ, 三宅麻理恵
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	38	Romantic Now		黒沢ともよ
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	39	DOKIDOKIリズム		山本希望
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	40	アタシポンコツアンドロイド		松嵜麗, 大橋彩香, 五十嵐裕美, 高森奈津美
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	41	Nation Blue		福原綾香, 青木瑠璃子, 黒沢ともよ
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	42	MUSIC♪		今井麻美, 福原綾香, 田所あずさ
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	43	Precious Grain		田所あずさ
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	44	素敵なキセキ		山崎はるか
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	45	ハッピー☆ラッキー☆ジェットマシーン		渡部優衣
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	46	恋のLesson初級編		Machico
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	47	Sentimental Venus		釘宮理恵, 麻倉もも, 木戸衣吹
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	48	my song		釘宮理恵
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	49	チクタク		仁後真耶子
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	50	恋花		原由実
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	51	君が選ぶ道		滝田樹里
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	52	約束		今井麻美
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	53	M@STERPIECE		中村繪里子, 長谷川明子, 今井麻美, 仁後真耶子, 浅倉杏美, 平田宏美, 下田麻美, 釘宮理恵, たかはし智秋, 原由実, 沼倉愛美, 滝田樹里, 福原綾香, 松嵜麗, 佳村はるか, 大橋彩香, 原紗友里, 青木瑠璃子, 五十嵐裕美, 山本希望, 高森奈津美, 黒沢ともよ, 三宅麻理恵, 麻倉もも, 田所あずさ, 山崎はるか, 渡部優衣, 木戸衣吹, Machico
+M@STERS OF IDOL WORLD!!2014	DAY2	2014/2/23	54	IDOL POWER RAINBOW		中村繪里子, 長谷川明子, 今井麻美, 仁後真耶子, 浅倉杏美, 平田宏美, 下田麻美, 釘宮理恵, たかはし智秋, 原由実, 沼倉愛美, 滝田樹里, 福原綾香, 松嵜麗, 佳村はるか, 大橋彩香, 原紗友里, 青木瑠璃子, 五十嵐裕美, 山本希望, 高森奈津美, 黒沢ともよ, 三宅麻理恵, 麻倉もも, 田所あずさ, 山崎はるか, 渡部優衣, 木戸衣吹, Machico, 戸松遥, 滝田樹里
+劇場版『THE IDOLM＠STER MOVIE～輝きの向こう側へ!～』スペシャルイベント		2014/3/9	1	M@STERPIECE		中村繪里子、今井麻美、雨宮天、麻倉もも、木戸衣吹
+劇場版『THE IDOLM＠STER MOVIE～輝きの向こう側へ!～』スペシャルイベント		2014/3/9	2	THE IDOLM@STER	M@STER VERSION	中村繪里子、今井麻美、雨宮天、麻倉もも、木戸衣吹
+LTPリリイベ	LTP11	2014/3/15	1	想いはCarnaval		角元明日香
+LTPリリイベ	LTP11	2014/3/15	2	Get My Shinin’		戸田めぐみ
+LTPリリイベ	LTP11	2014/3/15	3	Precious Grain		田所あずさ
+LTPリリイベ	LTP11	2014/3/15	4	トキメキの音符になって		麻倉もも
+LTPリリイベ	LTP11	2014/3/15	5	素敵なキセキ		山崎はるか
+LTPリリイベ	LTP11	2014/3/15	6	Thank You!		山崎はるか、麻倉もも、田所あずさ、戸田めぐみ、角元明日香
+LTPリリイベ	LTP12	2014/4/13	1	デコレーション・ドリ〜ミンッ♪		渡部恵子
+LTPリリイベ	LTP12	2014/4/13	2	素敵なキセキ		山崎はるか
+LTPリリイベ	LTP12	2014/4/13	3	Precious Grain		田所あずさ
+LTPリリイベ	LTP12	2014/4/13	4	トキメキの音符になって		麻倉もも
+LTPリリイベ	LTP12	2014/4/13	5	ハミングロード		浅倉杏美
+LTPリリイベ	LTP12	2014/4/13	6	Thank You!		浅倉杏美、山崎はるか、麻倉もも、田所あずさ、渡部恵子
+LTPリリイベ	LTP13	2014/5/10	1	dear...		髙橋ミナミ
+LTPリリイベ	LTP13	2014/5/10	2	微笑んだから、気づいたんだ。		下田麻美
+LTPリリイベ	LTP13	2014/5/10	3	Precious Grain		田所あずさ
+LTPリリイベ	LTP13	2014/5/10	4	トキメキの音符になって		麻倉もも
+LTPリリイベ	LTP13	2014/5/10	5	素敵なキセキ		山崎はるか
+LTPリリイベ	LTP13	2014/5/10	6	Thank You!		下田麻美 、髙橋ミナミ、山崎はるか、田所あずさ、麻倉もも
 1stLIVE HAPPY☆PERFORM@NCE!!	DAY1	2014/6/7	1	Thank You!		山崎はるか, Machico, 麻倉もも, 夏川椎菜, 愛美, 伊藤美来, 大関英里, 木戸衣吹, 諏訪彩花, 渡部優衣
 1stLIVE HAPPY☆PERFORM@NCE!!	DAY1	2014/6/7	2	PRETTY DREAMER		山崎はるか, 夏川椎菜, 諏訪彩花
 1stLIVE HAPPY☆PERFORM@NCE!!	DAY1	2014/6/7	3	素敵なキセキ		山崎はるか
@@ -335,6 +538,63 @@ MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	夜の部	2013/12/29	
 1stLIVE HAPPY☆PERFORM@NCE!!	DAY2	2014/6/8	27	Welcome!!		山崎はるか, Machico, 麻倉もも, 夏川椎菜, 雨宮天, 上田麗奈, 郁原ゆう, 種田梨沙, 藤井ゆきよ, 村川梨衣, 伊藤美来, 田所あずさ
 1stLIVE HAPPY☆PERFORM@NCE!!	DAY2	2014/6/8	28	THE IDOLM@STER		山崎はるか, Machico, 麻倉もも, 夏川椎菜, 雨宮天, 上田麗奈, 郁原ゆう, 種田梨沙, 藤井ゆきよ, 村川梨衣, 伊藤美来, 田所あずさ
 1stLIVE HAPPY☆PERFORM@NCE!!	DAY2	2014/6/8	29	Thank You!		山崎はるか, Machico, 麻倉もも, 夏川椎菜, 雨宮天, 上田麗奈, 郁原ゆう, 種田梨沙, 藤井ゆきよ, 村川梨衣, 伊藤美来, 田所あずさ
+LTHリリイベ	LTH01＆02	2014/8/24	1	Growing Storm!		乙女ストーム！（山崎はるか、Machico、伊藤美来、阿部里果、夏川椎菜）
+LTHリリイベ	LTH01＆02	2014/8/24	2	...In The Name Of。 ...LOVE?		阿部里果
+LTHリリイベ	LTH01＆02	2014/8/24	3	VIVID イマジネーション		夏川椎菜
+LTHリリイベ	LTH01＆02	2014/8/24	4	空想文学少女		伊藤美来
+LTHリリイベ	LTH01＆02	2014/8/24	5	Believe my change!		Machico
+LTHリリイベ	LTH01＆02	2014/8/24	6	未来飛行		山崎はるか
+LTHリリイベ	LTH01＆02	2014/8/24	7	Welcome!!		乙女ストーム！（山崎はるか、Machico、伊藤美来、阿部里果、夏川椎菜）
+Animelo Summer Live 2014		2014/8/30	1	READY!!	M＠STER VERSION	中村繪里子、今井麻美、下田麻美、沼倉愛美
+Animelo Summer Live 2014		2014/8/30	2	お願い！シンデレラ	M＠STER VERSION	大橋彩香、福原綾香、原紗友里、青木瑠璃子、松嵜麗、佳村はるか
+Animelo Summer Live 2014		2014/8/30	3	Thank You!		中村繪里子、今井麻美、下田麻美、沼倉愛美、山崎はるか、田所あずさ、Machico、麻倉もも
+Animelo Summer Live 2014		2014/8/30	4	M@STERPIECE		THE IDOLM@STER THREE STARS!!!（中村繪里子、今井麻美、下田麻美、沼倉愛美、大橋彩香、福原綾香、原紗友里、青木瑠璃子、松嵜麗、佳村はるか、山崎はるか、田所あずさ、Machico、麻倉もも）
+「アイドルマスターワンフォーオール」SPECIAL EVENT		2014/9/6	1	TOKIMEKIエスカレート		佳村はるか
+「アイドルマスターワンフォーオール」SPECIAL EVENT		2014/9/6	2	smiley days		沼倉愛美
+「アイドルマスターワンフォーオール」SPECIAL EVENT		2014/9/6	3	Never say never		福原綾香
+「アイドルマスターワンフォーオール」SPECIAL EVENT		2014/9/6	4	Precious Grain		田所あずさ
+「アイドルマスターワンフォーオール」SPECIAL EVENT		2014/9/6	5	未来飛行		山崎はるか
+「アイドルマスターワンフォーオール」SPECIAL EVENT		2014/9/6	6	Thank You!		ピティーブルー（沼倉愛美、田所あずさ、福原綾香）
+「アイドルマスターワンフォーオール」SPECIAL EVENT		2014/9/6	7	M@STERPIECE		沼倉愛美、田所あずさ、山崎はるか、福原綾香、佳村はるか
+LTHリリイベ	LTH03＆04	2014/10/13	1	カーニヴァル・ジャパネスク		諏訪彩花
+LTHリリイベ	LTH03＆04	2014/10/13	2	サマ☆トリ ~Summer trip~		平山笑美
+LTHリリイベ	LTH03＆04	2014/10/13	3	夢色トレイン		麻倉もも
+LTHリリイベ	LTH03＆04	2014/10/13	4	bitter sweet		末柄里恵
+LTHリリイベ	LTH03＆04	2014/10/13	5	君だけの欠片		郁原ゆう
+LTHリリイベ	LTH03＆04	2014/10/13	6	絵本		雨宮天
+LTHリリイベ	LTH03＆04	2014/10/13	7	Welcome!!		麻倉もも、雨宮天、平山笑美、諏訪彩花、末柄里恵、郁原ゆう
+LTHリリイベ	LTH05＆06	2014/12/13	1	Up!10sion♪Pleeeeeeeeease!		村川梨衣
+LTHリリイベ	LTH05＆06	2014/12/13	2	恋愛ロードランナー		上田麗奈
+LTHリリイベ	LTH05＆06	2014/12/13	3	MY STYLE! OUR STYLE!!!!		渡部恵子
+LTHリリイベ	LTH05＆06	2014/12/13	4	初恋バタフライ		桐谷蝶々
+LTHリリイベ	LTH05＆06	2014/12/13	5	Super Lover		渡部優衣
+LTHリリイベ	LTH05＆06	2014/12/13	6	フローズン・ワード		藤井ゆきよ
+LTHリリイベ	LTH05＆06	2014/12/13	7	Welcome!!		村川梨衣、渡部恵子、渡部優衣、上田麗奈、桐谷蝶々、藤井ゆきよ
+MILLION RADIO! SPECIAL PARTY	02 Day Party	2014/12/27	1	U・N・M・E・I ライブ		山崎はるか、田所あずさ、麻倉もも
+MILLION RADIO! SPECIAL PARTY	02 Day Party	2014/12/27	2	夢色トレイン		麻倉もも
+MILLION RADIO! SPECIAL PARTY	02 Day Party	2014/12/27	3	恋愛ロードランナー		上田麗奈
+MILLION RADIO! SPECIAL PARTY	02 Day Party	2014/12/27	4	...In The Name Of。 ...LOVE?		阿部里果
+MILLION RADIO! SPECIAL PARTY	02 Day Party	2014/12/27	5	ジレるハートに火をつけて		阿部里果、上田麗奈、藤井ゆきよ
+MILLION RADIO! SPECIAL PARTY	02 Day Party	2014/12/27	6	フローズン・ワード		藤井ゆきよ
+MILLION RADIO! SPECIAL PARTY	02 Day Party	2014/12/27	7	Catch my dream		田所あずさ
+MILLION RADIO! SPECIAL PARTY	02 Day Party	2014/12/27	8	未来飛行		山崎はるか
+MILLION RADIO! SPECIAL PARTY	02 Day Party	2014/12/27	9	Welcome!!		山崎はるか、田所あずさ、麻倉もも、阿部里果、上田麗奈、藤井ゆきよ
+MILLION RADIO! SPECIAL PARTY	02 Night Party	2014/12/27	1	U・N・M・E・I ライブ		山崎はるか、田所あずさ、麻倉もも
+MILLION RADIO! SPECIAL PARTY	02 Night Party	2014/12/27	2	素敵なキセキ		山崎はるか
+MILLION RADIO! SPECIAL PARTY	02 Night Party	2014/12/27	3	Up!10sion♪Pleeeeeeeeease!		村川梨衣
+MILLION RADIO! SPECIAL PARTY	02 Night Party	2014/12/27	4	トキメキの音符になって		麻倉もも
+MILLION RADIO! SPECIAL PARTY	02 Night Party	2014/12/27	5	HOME, SWEET FRIENDSHIP		Machico、村川梨衣、渡部恵子
+MILLION RADIO! SPECIAL PARTY	02 Night Party	2014/12/27	6	MY STYLE! OUR STYLE!!!!		渡部恵子
+MILLION RADIO! SPECIAL PARTY	02 Night Party	2014/12/27	7	Precious Grain		田所あずさ
+MILLION RADIO! SPECIAL PARTY	02 Night Party	2014/12/27	8	Believe my change!		Machico
+MILLION RADIO! SPECIAL PARTY	02 Night Party	2014/12/27	9	Welcome!!		山崎はるか、田所あずさ、麻倉もも、Machico、村川梨衣、渡部恵子
+LTHリリイベ	LTH07＆08	2015/3/8	1	WOW! I NEED!! 〜シンギングモンキー 歌唱拳〜		下田麻美
+LTHリリイベ	LTH07＆08	2015/3/8	2	アニマル☆ステイション！		原嶋あかり
+LTHリリイベ	LTH07＆08	2015/3/8	3	ユニゾン☆ビート		戸田めぐみ
+LTHリリイベ	LTH07＆08	2015/3/8	4	りんごのマーチ		田村奈央
+LTHリリイベ	LTH07＆08	2015/3/8	5	おまじない		木戸衣吹
+LTHリリイベ	LTH07＆08	2015/3/8	6	水中キャンディ		髙橋ミナミ
+LTHリリイベ	LTH07＆08	2015/3/8	7	Welcome!!		木戸衣吹、戸田めぐみ、下田麻美、髙橋ミナミ、田村奈央、原嶋あかり
 2ndLIVE ENJOY H@RMONY!!	DAY1	2015/4/4	1	Thank You!		山崎はるか, 田所あずさ, Machico, 麻倉もも, 雨宮天, 伊藤美来, 夏川椎菜, 藤井ゆきよ, 渡部優衣, 木戸衣吹, 小岩井ことり, 駒形友梨, 近藤唯, 戸田めぐみ, 山口立花子
 2ndLIVE ENJOY H@RMONY!!	DAY1	2015/4/4	2	Growing Storm!		山崎はるか, Machico, 伊藤美来, 夏川椎菜
 2ndLIVE ENJOY H@RMONY!!	DAY1	2015/4/4	3	ハッピー☆ラッキー☆ジェットマシーン		渡部優衣
@@ -395,6 +655,131 @@ MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	夜の部	2013/12/29	
 2ndLIVE ENJOY H@RMONY!!	DAY2	2015/4/5	28	未来飛行		山崎はるか
 2ndLIVE ENJOY H@RMONY!!	DAY2	2015/4/5	29	Welcome!!		山崎はるか, 田所あずさ, Machico, 麻倉もも, 雨宮天, 伊藤美来, 夏川椎菜, 藤井ゆきよ, 渡部優衣, 愛美, 上田麗奈, 大関英里, 末柄里恵, 髙橋ミナミ, 村川梨衣
 2ndLIVE ENJOY H@RMONY!!	DAY2	2015/4/5	30	Thank You!		山崎はるか, 田所あずさ, Machico, 麻倉もも, 雨宮天, 伊藤美来, 夏川椎菜, 藤井ゆきよ, 渡部優衣, 愛美, 上田麗奈, 大関英里, 末柄里恵, 髙橋ミナミ, 村川梨衣
+LTHリリイベ	LTH09＆10	2015/5/2	1	鳥籠スクリプチュア		小岩井ことり
+LTHリリイベ	LTH09＆10	2015/5/2	2	WHY?		山口立花子
+LTHリリイベ	LTH09＆10	2015/5/2	3	STEREOPHONIC ISOTONIC		中村温姫
+LTHリリイベ	LTH09＆10	2015/5/2	4	恋の音色ライン		野村香菜子
+LTHリリイベ	LTH09＆10	2015/5/2	5	Day After “Yesterday”		斉藤佑圭
+LTHリリイベ	LTH09＆10	2015/5/2	6	夕風のメロディー		近藤唯
+LTHリリイベ	LTH09＆10	2015/5/2	7	Welcome!!		小岩井ことり、斉藤佑圭、野村香菜子、近藤唯、中村温姫、山口立花子
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	1	THE IDOLM@STER		765PRO ALLSTARS+ (中村繪里子, 今井麻美, 釘宮理恵, 平田宏美, 下田麻美, 浅倉杏美, 原由実, 沼倉愛美, たかはし智秋, 滝田樹里)
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	2	READY!!		765PRO ALLSTARS+ (中村繪里子, 今井麻美, 釘宮理恵, 平田宏美, 下田麻美, 浅倉杏美, 原由実, 沼倉愛美, たかはし智秋, 滝田樹里)
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	3	START!!		中村繪里子
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	4	ラムネ色 青春		釘宮理恵, 下田麻美, たかはし智秋
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	5	Pon De Beach		沼倉愛美
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	6	待ち受けプリンス		今井麻美, 原由実
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	7	YOU往MY進！		下田麻美
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	8	ALRIGHT*		浅倉杏美
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	9	自転車		平田宏美
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	10	DIAMOND		釘宮理恵
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	11	空		滝田樹里
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	12	THE 愛		中村繪里子, 浅倉杏美, 滝田樹里
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	13	GO MY WAY!!		今井麻美, たかはし智秋
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	14	太陽のジェラシー		中村繪里子
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	15	おはよう！！朝ご飯		沼倉愛美
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	16	CHANGE!!!!		平田宏美, 下田麻美, 滝田樹里
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	17	First Stage		浅倉杏美
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	18	Here we go!!		釘宮理恵
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	19	魔法をかけて！		原由実
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	20	ふるふるフューチャー☆		中村繪里子, 沼倉愛美
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	21	ID:[OL]		滝田樹里
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	22	エージェント夜を往く		平田宏美
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	23	ポジティブ！		下田麻美
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	24	The world is all one !!		釘宮理恵, 浅倉杏美, 原由実
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	25	9:02pm		たかはし智秋
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	26	蒼い鳥		今井麻美
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	27	自分REST@RT		765PRO ALLSTARS+ (中村繪里子, 今井麻美, 釘宮理恵, 平田宏美, 下田麻美, 浅倉杏美, 原由実, 沼倉愛美, たかはし智秋, 滝田樹里)
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	28	DREAM		今井麻美, 釘宮理恵, 原由実
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	29	嘆きのFRACTION		たかはし智秋
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	30	Rebellion		沼倉愛美
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	31	relations		下田麻美, 滝田樹里
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	32	絶険、あるいは逃げられぬ恋		平田宏美
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	33	オーバーマスター		浅倉杏美, 原由実, 沼倉愛美
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	34	Fate of the World		今井麻美
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	35	KisS		原由実
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	36	笑って！		中村繪里子
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	37	またね		釘宮理恵
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	38	First Step		浅倉杏美
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	39	君が選ぶ道		滝田樹里
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	40	風花		原由実
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	41	細氷		今井麻美
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	42	LOST		平田宏美, 下田麻美, 沼倉愛美, たかはし智秋
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	43	私たちはずっと…でしょう？		765PRO ALLSTARS+ (中村繪里子, 今井麻美, 釘宮理恵, 平田宏美, 下田麻美, 浅倉杏美, 原由実, 沼倉愛美, たかはし智秋, 滝田樹里)
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	44	Destiny		765PRO ALLSTARS+ (中村繪里子, 今井麻美, 釘宮理恵, 平田宏美, 下田麻美, 浅倉杏美, 原由実, 沼倉愛美, たかはし智秋, 滝田樹里)
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	45	アイ MUST GO！		765PRO ALLSTARS+ (中村繪里子, 今井麻美, 釘宮理恵, 平田宏美, 下田麻美, 浅倉杏美, 原由実, 沼倉愛美, たかはし智秋, 滝田樹里)
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	46	M@STERPIECE		THE IDOLM@STER THREE STARS(中村繪里子, 今井麻美, 釘宮理恵, 平田宏美, 下田麻美, 浅倉杏美, 原由実, 沼倉愛美, たかはし智秋, 滝田樹里, 大橋彩香, 福原綾香, 原紗友里, 青木瑠璃子, 大空直美, 松嵜麗, 山崎はるか, 田所あずさ, Machico, 麻倉もも, 藤井ゆきよ, 渡部優衣)
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	47	虹色ミラクル		765PRO ALLSTARS+ (中村繪里子, 今井麻美, 釘宮理恵, 平田宏美, 下田麻美, 浅倉杏美, 原由実, 沼倉愛美, たかはし智秋, 滝田樹里)
+M@STERS OF IDOL WORLD!! 2015	Day1	2015/7/18	48	THE IDOLM@STER		THE IDOLM@STER THREE STARS(中村繪里子, 今井麻美, 釘宮理恵, 平田宏美, 下田麻美, 浅倉杏美, 原由実, 沼倉愛美, たかはし智秋, 滝田樹里, 大橋彩香, 福原綾香, 原紗友里, 青木瑠璃子, 大空直美, 松嵜麗, 山崎はるか, 田所あずさ, Machico, 麻倉もも, 藤井ゆきよ, 渡部優衣)
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	1	READY!!		765PRO ALLSTARS+(中村繪里子, 今井麻美, 釘宮理恵, 平田宏美, 下田麻美, 浅倉杏美, 原由実, 沼倉愛美, たかはし智秋, 滝田樹里)
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	2	お願い！シンデレラ		CINDERELLA GIRLS (大橋彩香, 福原綾香, 原紗友里, 青木瑠璃子, 五十嵐裕美, 大空直美, 黒沢ともよ, 洲崎綾, 高森奈津美, 松嵜麗, 山本希望, 佳村はるか)
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	3	Thank You!		MILLIONSTARS (山崎はるか, 田所あずさ, Machico, 愛美, 麻倉もも, 雨宮天, 伊藤美来, 上田麗奈, 木戸衣吹, 夏川椎菜, 藤井ゆきよ, 渡部優衣)
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	4	THE IDOLM@STER 2nd-mix		THE IDOLM@STER THREE STARS!!!(中村繪里子, 今井麻美, 釘宮理恵, 平田宏美, 下田麻美, 浅倉杏美, 原由実, 沼倉愛美, たかはし智秋, 滝田樹里, 大橋彩香, 福原綾香, 原紗友里, 青木瑠璃子, 五十嵐裕美, 大空直美, 黒沢ともよ, 洲崎綾, 高森奈津美, 松嵜麗, 山本希望, 佳村はるか, 山崎はるか, 田所あずさ, Machico, 愛美, 麻倉もも, 雨宮天, 伊藤美来, 上田麗奈, 木戸衣吹, 夏川椎菜, 藤井ゆきよ, 渡部優衣)
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	5	Welcome!!		MILLIONSTARS (山崎はるか, 田所あずさ, Machico, 愛美, 麻倉もも, 雨宮天, 伊藤美来, 上田麗奈, 木戸衣吹, 夏川椎菜, 藤井ゆきよ, 渡部優衣)
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	6	キラメキラリ		平田宏美, 浅倉杏美, 滝田樹里
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	7	Vault That Borderline!		今井麻美, 原由実
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	8	We're the friends!		五十嵐裕美, 大空直美, 洲崎綾
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	9	できたてEvo! Revo! Generation!		大橋彩香, 福原綾香, 原紗友里
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	10	星屑のシンフォニア		麻倉もも, 雨宮天, 伊藤美来
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	11	Sentimental Venus		木戸衣吹, 夏川椎菜, 渡部優衣
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	12	ジレるハートに火をつけて		愛美, 上田麗奈, 藤井ゆきよ
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	13	Shooting Stars		山崎はるか, 田所あずさ, Machico
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	14	Orange Sapphire		黒沢ともよ, 松嵜麗, 山本希望, 佳村はるか
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	15	ØωØver!!		青木瑠璃子, 高森奈津美
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	16	SMOKY THRILL		釘宮理恵, 下田麻美, たかはし智秋
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	17	乙女よ大志を抱け！！		中村繪里子, 沼倉愛美
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	18	GOIN'!!!		CINDERELLA GIRLS (大橋彩香, 福原綾香, 原紗友里, 青木瑠璃子, 五十嵐裕美, 大空直美, 黒沢ともよ, 洲崎綾, 高森奈津美, 松嵜麗, 山本希望, 佳村はるか)
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	19	GO MY WAY!!		今井麻美, たかはし智秋, 大橋彩香, 福原綾香, 原紗友里, 山崎はるか, 田所あずさ, 上田麗奈
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	20	素敵なキセキ		大橋彩香, 山崎はるか
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	21	Super Lover		松嵜麗, 渡部優衣
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	22	トキメキの音符になって		原由実, 佳村はるか, 麻倉もも
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	23	CHANGE!!!!		平田宏美, 下田麻美, 滝田樹里, 大空直美, 洲崎綾, 山本希望, Machico, 雨宮天, 藤井ゆきよ
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	24	あんずのうた		浅倉杏美, 五十嵐裕美, 木戸衣吹
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	25	Romantic Now		黒沢ともよ, 伊藤美来, 夏川椎菜
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	26	ミツボシ☆☆★		原紗友里, 上田麗奈
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	27	ふるふるフューチャー☆		中村繪里子, 沼倉愛美, 青木瑠璃子, 高森奈津美, 松嵜麗, 愛美, 伊藤美来, 渡部優衣
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	28	フローズン・ワード		洲崎綾, 夏川椎菜, 藤井ゆきよ
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	29	Believe my change!		黒沢ともよ, 山本希望, Machico
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	30	ライアー・ルージュ		沼倉愛美, 大空直美, 雨宮天
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	31	The world is all one !!		釘宮理恵, 浅倉杏美, 原由実, 五十嵐裕美, 黒沢ともよ, 佳村はるか, 麻倉もも, 木戸衣吹, 夏川椎菜
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	32	Twilight Sky		青木瑠璃子, 愛美
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	33	おねだり Shall We〜？		高森奈津美, 伊藤美来
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	34	Never say never		福原綾香, 田所あずさ
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	35	いっしょ		中村繪里子, 今井麻美, 大橋彩香, 福原綾香, 原紗友里, 山崎はるか, 田所あずさ, Machico
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	36	自分REST@RT		765PRO ALLSTARS+ (中村繪里子, 今井麻美, 釘宮理恵, 平田宏美, 下田麻美, 浅倉杏美, 原由実, 沼倉愛美, たかはし智秋, 滝田樹里)
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	37	オーバーマスター		浅倉杏美, 原由実, 沼倉愛美
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	38	relations		下田麻美, 滝田樹里
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	39	Blue Symphony		田所あずさ, 雨宮天, 夏川椎菜
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	40	Marionetteは眠らない		伊藤美来, 藤井ゆきよ
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	41	Memories		青木瑠璃子, 洲崎綾, 佳村はるか
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	42	Nation Blue		福原綾香, 五十嵐裕美, 山本希望
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	43	オルゴールの小箱		原紗友里, 大空直美, 黒沢ともよ
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	44	メッセージ		大橋彩香, 高森奈津美, 松嵜麗
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	45	瞳の中のシリウス		Machico, 愛美, 上田麗奈
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	46	ココロがかえる場所		山崎はるか, 麻倉もも, 木戸衣吹, 渡部優衣
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	47	my song		中村繪里子, 今井麻美, 釘宮理恵, 平田宏美, 下田麻美, たかはし智秋
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	48	Star!!		CINDERELLA GIRLS (大橋彩香, 福原綾香, 原紗友里, 青木瑠璃子, 五十嵐裕美, 大空直美, 黒沢ともよ, 洲崎綾, 高森奈津美, 松嵜麗, 山本希望, 佳村はるか)
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	49	Dreaming!		MILLIONSTARS (山崎はるか, 田所あずさ, Machico, 愛美, 麻倉もも, 雨宮天, 伊藤美来, 上田麗奈, 木戸衣吹, 夏川椎菜, 藤井ゆきよ, 渡部優衣)
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	50	M@STERPIECE		765PRO ALLSTARS+(中村繪里子, 今井麻美, 釘宮理恵, 平田宏美, 下田麻美, 浅倉杏美, 原由実, 沼倉愛美, たかはし智秋, 滝田樹里)
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	51	カーテンコール		THE IDOLM@STER THREE STARS!!!(中村繪里子, 今井麻美, 釘宮理恵, 平田宏美, 下田麻美, 浅倉杏美, 原由実, 沼倉愛美, たかはし智秋, 滝田樹里, 大橋彩香, 福原綾香, 原紗友里, 青木瑠璃子, 五十嵐裕美, 大空直美, 黒沢ともよ, 洲崎綾, 高森奈津美, 松嵜麗, 山本希望, 佳村はるか, 山崎はるか, 田所あずさ, Machico, 愛美, 麻倉もも, 雨宮天, 伊藤美来, 上田麗奈, 木戸衣吹, 夏川椎菜, 藤井ゆきよ, 渡部優衣)
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	52	THE IDOLM@STER		THE IDOLM@STER THREE STARS!!!(中村繪里子, 今井麻美, 釘宮理恵, 平田宏美, 下田麻美, 浅倉杏美, 原由実, 沼倉愛美, たかはし智秋, 滝田樹里, 大橋彩香, 福原綾香, 原紗友里, 青木瑠璃子, 五十嵐裕美, 大空直美, 黒沢ともよ, 洲崎綾, 高森奈津美, 松嵜麗, 山本希望, 佳村はるか, 山崎はるか, 田所あずさ, Machico, 愛美, 麻倉もも, 雨宮天, 伊藤美来, 上田麗奈, 木戸衣吹, 夏川椎菜, 藤井ゆきよ, 渡部優衣)
+M@STERS OF IDOL WORLD!! 2015	Day2	2015/7/19	53	アイ MUST GO！		THE IDOLM@STER THREE STARS!!!(中村繪里子, 今井麻美, 釘宮理恵, 平田宏美, 下田麻美, 浅倉杏美, 原由実, 沼倉愛美, たかはし智秋, 滝田樹里, 大橋彩香, 福原綾香, 原紗友里, 青木瑠璃子, 五十嵐裕美, 大空直美, 黒沢ともよ, 洲崎綾, 高森奈津美, 松嵜麗, 山本希望, 佳村はるか, 山崎はるか, 田所あずさ, Machico, 愛美, 麻倉もも, 雨宮天, 伊藤美来, 上田麗奈, 木戸衣吹, 夏川椎菜, 藤井ゆきよ, 渡部優衣)
+LTDリリイベ	LTD01	2015/10/18	1	Maria Trap		山崎はるか
+LTDリリイベ	LTD01	2015/10/18	2	Super Lover		田所あずさ
+LTDリリイベ	LTD01	2015/10/18	3	Be My Boy		Machico
+LTDリリイベ	LTD01	2015/10/18	4	Shooting Stars		山崎はるか、田所あずさ、Machico
+LTDリリイベ	LTD01	2015/10/18	5	Dreaming!		山崎はるか、田所あずさ、Machico
+LTDリリイベ	LTD02	2015/11/23	1	成長Chu→LOVER!!		伊藤美来、夏川椎菜
+LTDリリイベ	LTD02	2015/11/23	2	piece of cake		平山笑美、雨宮天
+LTDリリイベ	LTD02	2015/11/23	3	ハルカナミライ		中村繪里子、山崎はるか
+LTDリリイベ	LTD02	2015/11/23	4	Dreaming!		中村繪里子、山崎はるか、平山笑美、雨宮天、伊藤美来、夏川椎菜
+LTDリリイベ	LTD03	2015/12/20	1	Cut. Cut. Cut.		渡部恵子、阿部里果
+LTDリリイベ	LTD03	2015/12/20	2	Smiling Crescent		麻倉もも、桐谷蝶々
+LTDリリイベ	LTD03	2015/12/20	3	アライブファクター		今井麻美、田所あずさ
+LTDリリイベ	LTD03	2015/12/20	4	Dreaming!		今井麻美、田所あずさ、渡部恵子、阿部里果、麻倉もも、桐谷蝶々
+LTDリリイベ	LTD04	2016/1/24	1	深層マーメイド		沼倉愛美、Machico
+LTDリリイベ	LTD04	2016/1/24	2	HELLO, YOUR ANGEL♪		小岩井ことり、原嶋あかり
+LTDリリイベ	LTD04	2016/1/24	3	Melody in scape		大関英里、駒形友梨
+LTDリリイベ	LTD04	2016/1/24	4	Dreaming!		沼倉愛美、Machico、小岩井ことり、原嶋あかり、大関英里、駒形友梨
 3rdLIVE TOUR BELIEVE MY DRE@M!!	名古屋公演	2016/1/31	1	Dreaming!		山崎はるか, Machico, 愛美, 稲川英里, 木戸衣吹, 桐谷蝶々, 諏訪彩花, 髙橋ミナミ, 藤井ゆきよ, 渡部恵子
 3rdLIVE TOUR BELIEVE MY DRE@M!!	名古屋公演	2016/1/31	2	エスケープ		愛美, 藤井ゆきよ
 3rdLIVE TOUR BELIEVE MY DRE@M!!	名古屋公演	2016/1/31	3	カーニヴァル・ジャパネスク		諏訪彩花
@@ -451,6 +836,10 @@ MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	夜の部	2013/12/29	
 3rdLIVE TOUR BELIEVE MY DRE@M!!	仙台公演	2016/2/7	26	カワラナイモノ		伊藤美来, 夏川椎菜
 3rdLIVE TOUR BELIEVE MY DRE@M!!	仙台公演	2016/2/7	27	Welcome!!		Machico, 麻倉もも, 雨宮天, 伊藤美来, 郁原ゆう, 近藤唯, 夏川椎菜, 原嶋あかり, 村川梨衣, 渡部優衣
 3rdLIVE TOUR BELIEVE MY DRE@M!!	仙台公演	2016/2/7	28	Thank You!		Machico, 麻倉もも, 雨宮天, 伊藤美来, 郁原ゆう, 近藤唯, 夏川椎菜, 原嶋あかり, 村川梨衣, 渡部優衣
+LTDリリイベ	LTD05	2016/2/27	1	夜に輝く星座のように		村川梨衣、渡部優衣
+LTDリリイベ	LTD05	2016/2/27	2	fruity love		小笠原早紀、中村温姫
+LTDリリイベ	LTD05	2016/2/27	3	秘密のメモリーズ		原由実、末柄里恵
+LTDリリイベ	LTD05	2016/2/27	4	Dreaming!		原由実、末柄里恵、村川梨衣、渡部優衣、小笠原早紀、中村温姫
 3rdLIVE TOUR BELIEVE MY DRE@M!!	大阪公演1日目	2016/3/12	1	Dreaming!		山崎はるか, 田所あずさ, Machico, 愛美, 麻倉もも, 大関英里, 夏川椎菜, 藤井ゆきよ, 山口立花子, 渡部優衣, 上田麗奈, 角元明日香, 駒形友梨, 野村香菜子
 3rdLIVE TOUR BELIEVE MY DRE@M!!	大阪公演1日目	2016/3/12	2	エスケープ		愛美, 藤井ゆきよ
 3rdLIVE TOUR BELIEVE MY DRE@M!!	大阪公演1日目	2016/3/12	3	恋愛ロードランナー		上田麗奈
@@ -629,6 +1018,40 @@ MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	夜の部	2013/12/29	
 3rdLIVE TOUR BELIEVE MY DRE@M!!	幕張公演2日目	2016/4/17	39	Welcome!!		山崎はるか, 田所あずさ, Machico, 麻倉もも, 雨宮天, 伊藤美来, 諏訪彩花, 夏川椎菜, 藤井ゆきよ, 渡部優衣, 上田麗奈, 大関英里, 木戸衣吹, 駒形友梨, 髙橋ミナミ, 山口立花子
 3rdLIVE TOUR BELIEVE MY DRE@M!!	幕張公演2日目	2016/4/17	40	Thank You!		山崎はるか, 田所あずさ, Machico, 麻倉もも, 雨宮天, 伊藤美来, 諏訪彩花, 夏川椎菜, 藤井ゆきよ, 渡部優衣, 上田麗奈, 大関英里, 木戸衣吹, 駒形友梨, 髙橋ミナミ, 山口立花子
 3rdLIVE TOUR BELIEVE MY DRE@M!!	幕張公演2日目	2016/4/17	41	Dreaming!		山崎はるか, 田所あずさ, Machico, 麻倉もも, 雨宮天, 伊藤美来, 諏訪彩花, 夏川椎菜, 藤井ゆきよ, 渡部優衣, 上田麗奈, 大関英里, 木戸衣吹, 駒形友梨, 髙橋ミナミ, 山口立花子
+LTDリリイベ	LTD06	2016/4/24	1	Understand? Understand!		上田麗奈、種田梨沙
+LTDリリイベ	LTD06	2016/4/24	2	ジャングル☆パーティー		下田麻美、稲川英里
+LTDリリイベ	LTD06	2016/4/24	3	Dreamscape		斉藤佑圭、浜崎奈々
+LTDリリイベ	LTD06	2016/4/24	4	Dreaming!		下田麻美、稲川英里、上田麗奈、種田梨沙、斉藤佑圭、浜崎奈々
+TAリリイベ	TA01	2016/10/30	1	創造は始まりの風を連れて		伊藤美来、小岩井ことり、麻倉もも、村川梨衣、中村温姫
+TAリリイベ	TA01	2016/10/30	2	DIAMOND DAYS		伊藤美来、小岩井ことり、麻倉もも、村川梨衣、中村温姫
+MILLION RADIO! SPECIAL PARTY 	03　DAY PARTY	2016/11/20	1	ターンオンタイム！		山崎はるか、田所あずさ、麻倉もも
+MILLION RADIO! SPECIAL PARTY 	03　DAY PARTY	2016/11/20	2	アニマル☆ステイション！		原嶋あかり
+MILLION RADIO! SPECIAL PARTY 	03　DAY PARTY	2016/11/20	3	Catch my dream		田所あずさ
+MILLION RADIO! SPECIAL PARTY 	03　DAY PARTY	2016/11/20	4	ホップ♪ステップ♪レインボウ♪		稲川英里
+MILLION RADIO! SPECIAL PARTY 	03　DAY PARTY	2016/11/20	5	Good-Sleep, Baby♡		稲川英里、原嶋あかり、渡部恵子
+MILLION RADIO! SPECIAL PARTY 	03　DAY PARTY	2016/11/20	6	夢色トレイン		麻倉もも
+MILLION RADIO! SPECIAL PARTY 	03　DAY PARTY	2016/11/20	7	素敵なキセキ		山崎はるか
+MILLION RADIO! SPECIAL PARTY 	03　DAY PARTY	2016/11/20	8	MY STYLE! OUR STYLE!!!!		渡部恵子
+MILLION RADIO! SPECIAL PARTY 	03　DAY PARTY	2016/11/20	9	Dreaming!		山崎はるか、田所あずさ、麻倉もも、稲川英里、原嶋あかり、渡部恵子
+MILLION RADIO! SPECIAL PARTY 	03 NIGHT PARTY	2016/11/20	1	ターンオンタイム！		山崎はるか、田所あずさ、麻倉もも
+MILLION RADIO! SPECIAL PARTY 	03 NIGHT PARTY	2016/11/20	2	カーニヴァル・ジャパネスク		諏訪彩花
+MILLION RADIO! SPECIAL PARTY 	03 NIGHT PARTY	2016/11/20	3	未来飛行		山崎はるか
+MILLION RADIO! SPECIAL PARTY 	03 NIGHT PARTY	2016/11/20	4	Be My Boy		山口立花子
+MILLION RADIO! SPECIAL PARTY 	03 NIGHT PARTY	2016/11/20	5	Eternal Harmony		諏訪彩花、髙橋ミナミ、山口立花子
+MILLION RADIO! SPECIAL PARTY 	03 NIGHT PARTY	2016/11/20	6	トキメキの音符になって		麻倉もも
+MILLION RADIO! SPECIAL PARTY 	03 NIGHT PARTY	2016/11/20	7	Precious Grain		田所あずさ
+MILLION RADIO! SPECIAL PARTY 	03 NIGHT PARTY	2016/11/20	8	水中キャンディ		髙橋ミナミ
+MILLION RADIO! SPECIAL PARTY 	03 NIGHT PARTY	2016/11/20	9	Dreaming!		山崎はるか、田所あずさ、麻倉もも、諏訪彩花、髙橋ミナミ、山口立花子
+TAリリイベ	TA02	2016/11/26	1	俠気乱舞		愛美、渡部恵子、稲川英里、田村奈央、浜崎奈々
+TAリリイベ	TA02	2016/11/26	2	DIAMOND DAYS		愛美、渡部恵子、稲川英里、田村奈央、浜崎奈々
+TAリリイベ	TA03	2016/12/17	1	赤い世界が消える頃		木戸衣吹、大関英里、阿部里果、近藤唯、平山笑美
+TAリリイベ	TA03	2016/12/17	2	DIAMOND DAYS		木戸衣吹、大関英里、阿部里果、近藤唯、平山笑美
+LTFリリイベ	LTF01	2017/1/14	1	ランニング・ハイッ		キャンサー [郁原ゆう、田村奈央、渡部優衣]
+LTFリリイベ	LTF01	2017/1/14	2	Bonnes! Bonnes!! Vacances!!!		リブラ [Machico、大関英里、浜崎奈々]
+LTFリリイベ	LTF01	2017/1/14	3	サンリズム・オーケストラ♪		郁原ゆう、田村奈央、渡部優衣、Machico、大関英里、浜崎奈々
+LTFリリイベ	LTF02	2017/2/19	1	Raise the FLAG		サジタリアス［阿部里果、戸田めぐみ、藤井ゆきよ］
+LTFリリイベ	LTF02	2017/2/19	2	待ちぼうけのLacrima		アクアリウス［愛美、駒形友梨、平山笑美］
+LTFリリイベ	LTF02	2017/2/19	3	brave HARMONY		阿部里果、戸田めぐみ、藤井ゆきよ、愛美、駒形友梨、平山笑美
 4thLIVE TH@NK YOU for SMILE!!	DAY1 Sunshine Theater	2017/3/10	1	Thank You!		Machico, 大関英里, 角元明日香, 郁原ゆう, 木戸衣吹, 田村奈央, 中村温姫, 夏川椎菜, 浜崎奈々, 原嶋あかり, 山口立花子, 渡部優衣
 4thLIVE TH@NK YOU for SMILE!!	DAY1 Sunshine Theater	2017/3/10	2	サンリズム・オーケストラ♪		Machico, 大関英里, 角元明日香, 郁原ゆう, 木戸衣吹, 田村奈央, 中村温姫, 夏川椎菜, 浜崎奈々, 原嶋あかり, 山口立花子, 渡部優衣
 4thLIVE TH@NK YOU for SMILE!!	DAY1 Sunshine Theater	2017/3/10	3	おまじない		木戸衣吹
@@ -711,6 +1134,9 @@ MILLION RADIO SPECIAL PARTY 01 〜2013年はThank You!〜 	夜の部	2013/12/29	
 4thLIVE TH@NK YOU for SMILE!!	DAY3 Starlight Theater	2017/3/12	26	Brand New Theater!		山崎はるか, 麻倉もも, 雨宮天, 稲川英里, 上田麗奈, 小笠原早紀, 桐谷蝶々, 末柄里恵, 諏訪彩花, 髙橋ミナミ, 村川梨衣, 渡部恵子
 4thLIVE TH@NK YOU for SMILE!!	DAY3 Starlight Theater	2017/3/12	27	Dreaming!		山崎はるか, 麻倉もも, 雨宮天, 稲川英里, 上田麗奈, 小笠原早紀, 桐谷蝶々, 末柄里恵, 諏訪彩花, 髙橋ミナミ, 村川梨衣, 渡部恵子
 4thLIVE TH@NK YOU for SMILE!!	DAY3 Starlight Theater	2017/3/12	28	Thank You!		山崎はるか, 麻倉もも, 雨宮天, 稲川英里, 上田麗奈, 小笠原早紀, 桐谷蝶々, 末柄里恵, 諏訪彩花, 髙橋ミナミ, 村川梨衣, 渡部恵子, 田所あずさ, 愛美, 阿部里果, 伊藤美来, 小岩井ことり, 駒形友梨, 近藤唯, 斉藤佑圭, 戸田めぐみ, 野村香菜子, 平山笑美, 藤井ゆきよ, Machico, 大関英里, 角元明日香, 郁原ゆう, 木戸衣吹, 田村奈央, 中村温姫, 夏川椎菜, 浜崎奈々, 原嶋あかり, 山口立花子, 渡部優衣, 田中琴葉
+LTFリリイベ	LTF03	2017/4/2	1	メメント？モメント♪ルルルルル☆		タウラス[山崎はるか、諏訪彩花、桐谷蝶々]
+LTFリリイベ	LTF03	2017/4/2	2	永遠の花		ジェミニ[渡部恵子、末柄里恵、髙橋ミナミ]
+LTFリリイベ	LTF03	2017/4/2	3	Starry Melody		山崎はるか、諏訪彩花、桐谷蝶々、渡部恵子、末柄里恵、髙橋ミナミ
 First Time in TAIWAN 	DAY1	2017/4/22	1	READY!!		中村繪里子, 今井麻美, 浅倉杏美, 下田麻美, 原由実, 沼倉愛美, 山崎はるか, Machico, 稲川英里, 愛美, 末柄里恵, 野村香菜子, 麻倉もも, 渡部優衣
 First Time in TAIWAN 	DAY1	2017/4/22	2	ハッピー☆ラッキー☆ジェットマシーン		中村繪里子, 渡部優衣
 First Time in TAIWAN 	DAY1	2017/4/22	3	BOUNCING♪ SMILE!		沼倉愛美, 稲川英里
@@ -769,6 +1195,29 @@ First Time in TAIWAN 	DAY2	2017/4/23	26	Dreaming!		中村繪里子, 今井麻美
 First Time in TAIWAN 	DAY2	2017/4/23	27	M@STERPIECE		中村繪里子, 今井麻美, 浅倉杏美, 下田麻美, 原由実, 沼倉愛美, 山崎はるか, Machico, 稲川英里, 愛美, 末柄里恵, 野村香菜子, 麻倉もも, 渡部優衣
 First Time in TAIWAN 	DAY2	2017/4/23	28	THE IDOLM@STER		中村繪里子, 今井麻美, 浅倉杏美, 下田麻美, 原由実, 沼倉愛美, 山崎はるか, Machico, 稲川英里, 愛美, 末柄里恵, 野村香菜子, 麻倉もも, 渡部優衣
 First Time in TAIWAN 	DAY2	2017/4/23	29	The world is all one !!		中村繪里子, 今井麻美, 浅倉杏美, 下田麻美, 原由実, 沼倉愛美, 山崎はるか, Machico, 稲川英里, 愛美, 末柄里恵, 野村香菜子, 麻倉もも, 渡部優衣
+Animelo Summer Live 2017		2017/8/26	1	Dreaming!		山崎はるか、田所あずさ、Machico、愛美、麻倉もも、雨宮天、伊藤美来 上田麗奈、木戸衣吹、駒形友梨、諏訪彩花、髙橋ミナミ、夏川椎菜、村川梨衣、渡部優衣
+Animelo Summer Live 2017		2017/8/26	2	PRETTY DREAMER	Medley ver・メドレー	渡部優衣、山崎はるか、夏川椎菜
+Animelo Summer Live 2017		2017/8/26		カーニヴァル・ジャパネスク	Medley ver・メドレー	諏訪彩花
+Animelo Summer Live 2017		2017/8/26		Up!10sion♪Pleeeeeeeeease!	Medley ver・メドレー	村川梨衣
+Animelo Summer Live 2017		2017/8/26		Eternal Harmony	Medley ver・メドレー	上田麗奈、伊藤美来、木戸衣吹
+Animelo Summer Live 2017		2017/8/26		dear...	Medley ver・メドレー	髙橋ミナミ
+Animelo Summer Live 2017		2017/8/26		プラリネ	Medley ver・メドレー	愛美
+Animelo Summer Live 2017		2017/8/26		アイル	Medley ver・メドレー	Machico、愛美
+Animelo Summer Live 2017		2017/8/26		Shooting Stars	Medley ver・メドレー	麻倉もも、田所あずさ、雨宮天、駒形友梨
+Animelo Summer Live 2017		2017/8/26	3	Brand New Theater!		山崎はるか、田所あずさ、Machico、愛美、麻倉もも、雨宮天、伊藤美来 上田麗奈、木戸衣吹、駒形友梨、諏訪彩花、髙橋ミナミ、夏川椎菜、村川梨衣、渡部優衣
+EXTRA LIVE MEG@TON VOICE!		2017/9/17	1	Brand New Theater!		大関英里、末柄里恵、田所あずさ、香里有佐、山崎はるか、南早紀、Machico、上田麗奈、渡部恵子、渡部優衣
+EXTRA LIVE MEG@TON VOICE!		2017/9/17	2	Precious Grain		田所あずさ
+EXTRA LIVE MEG@TON VOICE!		2017/9/17	3	ハッピー☆ラッキー☆ジェットマシーン		渡部優衣
+EXTRA LIVE MEG@TON VOICE!		2017/9/17	4	スマイルいちばん		大関英里
+EXTRA LIVE MEG@TON VOICE!		2017/9/17	5	瑠璃色金魚と花菖蒲		南早紀
+EXTRA LIVE MEG@TON VOICE!		2017/9/17	6	ハミングバード		香里有佐
+EXTRA LIVE MEG@TON VOICE!		2017/9/17	7	インヴィンシブル・ジャスティス		マイティーセーラーズ［Machico、上田麗奈］
+EXTRA LIVE MEG@TON VOICE!		2017/9/17	8	ローリング△さんかく		渡部恵子
+EXTRA LIVE MEG@TON VOICE!		2017/9/17	9	祈りの羽根		末柄里恵
+EXTRA LIVE MEG@TON VOICE!		2017/9/17	10	未来系ドリーマー		山崎はるか
+EXTRA LIVE MEG@TON VOICE!		2017/9/17	11	Sentimental Venus		山崎はるか、末柄里恵、上田麗奈、香里有佐、大関英里
+EXTRA LIVE MEG@TON VOICE!		2017/9/17	12	Marionetteは眠らない		田所あずさ、渡部優衣、Machico、渡部恵子、南早紀
+EXTRA LIVE MEG@TON VOICE!		2017/9/17	13	Dreaming!		大関英里、末柄里恵、田所あずさ、香里有佐、山崎はるか、南早紀、Machico、上田麗奈、渡部恵子、渡部優衣
 HOTCHPOTCH FESTIV@L!! 	DAY1	2017/10/7	1	Welcome!!		中村繪里子, 沼倉愛美, 平田宏美, 原由実, 仁後真耶子, たかはし智秋, 山崎はるか, 郁原ゆう, 平山笑美, 上田麗奈, 大関英里, 近藤唯, 愛美, 南早紀, 原嶋あかり, 伊藤美来, 野村香菜子, 小笠原早紀, 麻倉もも, 戸田めぐみ, 桐谷蝶々, 夏川椎菜, 渡部優衣
 HOTCHPOTCH FESTIV@L!! 	DAY1	2017/10/7	2	神SUMMER!!		平田宏美, たかはし智秋, 上田麗奈, 近藤唯, 戸田めぐみ
 HOTCHPOTCH FESTIV@L!! 	DAY1	2017/10/7	3	アニマル☆ステイション！		沼倉愛美, 原嶋あかり, 小笠原早紀
@@ -819,6 +1268,38 @@ HOTCHPOTCH FESTIV@L!! 	DAY2	2017/10/8	22	アライブファクター		今井麻�
 HOTCHPOTCH FESTIV@L!! 	DAY2	2017/10/8	23	カーテンコール		今井麻美, 長谷川明子, 若林直美, 浅倉杏美, 下田麻美, 釘宮理恵, 田所あずさ, Machico, 稲川英里, 雨宮天, 田村奈央, 香里有佐, 角元明日香, 渡部恵子, 駒形友梨, 小岩井ことり, 諏訪彩花, 藤井ゆきよ, 末柄里恵, 髙橋ミナミ, 浜崎奈々, 阿部里果, 山口立花子, 中村温姫
 HOTCHPOTCH FESTIV@L!! 	DAY2	2017/10/8	24	Brand New Theater!		今井麻美, 長谷川明子, 若林直美, 浅倉杏美, 下田麻美, 釘宮理恵, 田所あずさ, Machico, 稲川英里, 雨宮天, 田村奈央, 香里有佐, 角元明日香, 渡部恵子, 駒形友梨, 小岩井ことり, 諏訪彩花, 藤井ゆきよ, 末柄里恵, 髙橋ミナミ, 浜崎奈々, 阿部里果, 山口立花子, 中村温姫
 HOTCHPOTCH FESTIV@L!! 	DAY2	2017/10/8	25	THE IDOLM@STER		今井麻美, 長谷川明子, 若林直美, 浅倉杏美, 下田麻美, 釘宮理恵, 田所あずさ, Machico, 稲川英里, 雨宮天, 田村奈央, 香里有佐, 角元明日香, 渡部恵子, 駒形友梨, 小岩井ことり, 諏訪彩花, 藤井ゆきよ, 末柄里恵, 髙橋ミナミ, 浜崎奈々, 阿部里果, 山口立花子, 中村温姫
+MSリリイベ	02・03	2017/11/12	1	ロケットスター☆		Machico
+MSリリイベ	02・03	2017/11/12	2	プリンセス・アラモード		諏訪彩花
+MSリリイベ	02・03	2017/11/12	3	HOME RUN SONG♪		斉藤佑圭
+MSリリイベ	02・03	2017/11/12	4	満腹至極フルコォス		大関英里
+MSリリイベ	02・03	2017/11/12	5	Only One Second		駒形友梨
+MSリリイベ	02・03	2017/11/12	6	ハミングバード		香里有佐
+MSリリイベ	02・03	2017/11/12	7	Brand New Theater!		Machico、香里有佐、斉藤佑圭、諏訪彩花、大関英里、駒形友梨
+MTG・MSリリイベ	MTG02&MS04	2017/12/29	1	AIKANE？		小笠原早紀
+MTG・MSリリイベ	MTG02&MS04	2017/12/29	2	ART NEEDS HEART BEATS		中村温姫
+MTG・MSリリイベ	MTG02&MS04	2017/12/29	3	あめにうたおう♪		木戸衣吹
+MTG・MSリリイベ	MTG02&MS04	2017/12/29	4	FairyTaleじゃいられない		愛美、藤井ゆきよ
+MTG・MSリリイベ	MTG02&MS04	2017/12/29	5	Brand New Theater!		愛美、藤井ゆきよ、小笠原早紀、木戸衣吹、中村温姫
+MTG・MSリリイベ	MTG03&MS05	2018/1/27	1	たんけんぼうけん☆ハイホー隊		稲川英里
+MTG・MSリリイベ	MTG03&MS05	2018/1/27	2	ふわりずむ		桐谷蝶々
+MTG・MSリリイベ	MTG03&MS05	2018/1/27	3	はなしらべ		郁原ゆう
+MTG・MSリリイベ	MTG03&MS05	2018/1/27	4	Angelic Parade♪		平山笑美、Machico、香里有佐
+MTG・MSリリイベ	MTG03&MS05	2018/1/27	5	Brand New Theater!		桐谷蝶々、香里有佐、稲川英里、Machico、郁原ゆう、平山笑美
+MTG・MSリリイベ	MTG04&MS06	2018/2/25	1	Home is a coming now!		渡部優衣
+MTG・MSリリイベ	MTG04&MS06	2018/2/25	2	WE ARE ONE!!		浜崎奈々
+MTG・MSリリイベ	MTG04&MS06	2018/2/25	3	ムーンゴールド		野村香菜子
+MTG・MSリリイベ	MTG04&MS06	2018/2/25	4	Princess Be Ambitious!!		伊藤美来、山崎はるか、郁原ゆう
+MTG・MSリリイベ	MTG04&MS06	2018/2/25	5	Brand New Theater!		野村香菜子、浜崎奈々、山崎はるか、郁原ゆう、伊藤美来、渡部優衣
+MTG・MSリリイベ	MTG05&MS07	2018/3/17	1	Take！3. 2. 1. → S・P・A・C・E↑↑		村川梨衣
+MTG・MSリリイベ	MTG05&MS07	2018/3/17	2	ときどきシーソー		原嶋あかり
+MTG・MSリリイベ	MTG05&MS07	2018/3/17	3	スノウレター		田村奈央
+MTG・MSリリイベ	MTG05&MS07	2018/3/17	4	昏き星、遠い月		夜想令嬢 -GRAC&E NOCTURNE-[小岩井ことり、藤井ゆきよ、野村香菜子、山口立花子]
+MTG・MSリリイベ	MTG05&MS07	2018/3/17	5	Brand New Theater!		小岩井ことり、藤井ゆきよ、野村香菜子、山口立花子、田村奈央、原嶋あかり、村川梨衣
+MTG・MSリリイベ	MTG06&MS08	2018/4/29	1	空に手が触れる場所		平山笑美
+MTG・MSリリイベ	MTG06&MS08	2018/4/29	2	Sister		小岩井ことり
+MTG・MSリリイベ	MTG06&MS08	2018/4/29	3	シルエット		種田梨沙
+MTG・MSリリイベ	MTG06&MS08	2018/4/29	4	虹色letters		Cleasky[角元明日香、桐谷蝶々]
+MTG・MSリリイベ	MTG06&MS08	2018/4/29	5	Brand New Theater!		平山笑美、角元明日香、種田梨沙、小岩井ことり、桐谷蝶々
 5thLIVE BRAND NEW PERFORM@NCE!!!	DAY1	2018/6/2	1	Brand New Theater!		山崎はるか, 郁原ゆう, 平山笑美, 雨宮天, 香里有佐, 近藤唯, 南早紀, 渡部恵子, 末柄里恵, 原嶋あかり, 伊藤美来, 小笠原早紀, 麻倉もも, 髙橋ミナミ, 戸田めぐみ, 阿部里果, 村川梨衣, 木戸衣吹, 中村温姫
 5thLIVE BRAND NEW PERFORM@NCE!!!	DAY1	2018/6/2	2	未来系ドリーマー		山崎はるか
 5thLIVE BRAND NEW PERFORM@NCE!!!	DAY1	2018/6/2	3	Eternal Harmony		平山笑美, 雨宮天, 麻倉もも, 阿部里果, 村川梨衣
@@ -889,9 +1370,26 @@ HOTCHPOTCH FESTIV@L!! 	DAY2	2017/10/8	25	THE IDOLM@STER		今井麻美, 長谷川
 5thLIVE BRAND NEW PERFORM@NCE!!!	DAY2	2018/6/3	33	Dreaming!		田所あずさ, Machico, 稲川英里, 田村奈央, 上田麗奈, 大関英里, 角元明日香, 愛美, 駒形友梨, 種田梨沙, 小岩井ことり, 諏訪彩花, 藤井ゆきよ, 野村香菜子, 浜崎奈々, 桐谷蝶々, 夏川椎菜, 山口立花子, 渡部優衣
 5thLIVE BRAND NEW PERFORM@NCE!!!	DAY2	2018/6/3	34	UNION!!		田所あずさ, Machico, 稲川英里, 田村奈央, 上田麗奈, 大関英里, 角元明日香, 愛美, 駒形友梨, 種田梨沙, 小岩井ことり, 諏訪彩花, 藤井ゆきよ, 野村香菜子, 浜崎奈々, 桐谷蝶々, 夏川椎菜, 山口立花子, 渡部優衣
 5thLIVE BRAND NEW PERFORM@NCE!!!	DAY2	2018/6/3	35	Thank You!		田所あずさ, Machico, 稲川英里, 田村奈央, 上田麗奈, 大関英里, 角元明日香, 愛美, 駒形友梨, 種田梨沙, 小岩井ことり, 諏訪彩花, 藤井ゆきよ, 野村香菜子, 浜崎奈々, 桐谷蝶々, 夏川椎菜, 山口立花子, 渡部優衣
+MTGリリイベ	07＆08	2018/6/24	1	ZETTAI × BREAK!! トゥインクルリズム		トゥインクルリズム [伊藤美来、原嶋あかり、村川梨衣]
+MTGリリイベ	07＆08	2018/6/24	2	Tomorrow Program		トゥインクルリズム [伊藤美来、原嶋あかり、村川梨衣]
+MTGリリイベ	07＆08	2018/6/24	3	Melty Fantasia		EScape [南早紀、阿部里果、雨宮天]
+MTGリリイベ	07＆08	2018/6/24	4	I.D 〜EScape from Utopia〜		EScape [南早紀、阿部里果、雨宮天]
+MTGリリイベ	07＆08	2018/6/24	5	Brand New Theater!		村川梨衣、雨宮天、原嶋あかり、阿部里果、南早紀、伊藤美来
 ミリシタ1周年！サンキュー生配信		2018/6/30	1	Brand New Theater!		髙橋ミナミ、山口立花子、田所あずさ、山崎はるか、Machico、野村香菜子、諏訪彩花
 ミリシタ1周年！サンキュー生配信		2018/6/30	2	Welcome!!		髙橋ミナミ、山口立花子、田所あずさ、山崎はるか、Machico、野村香菜子、諏訪彩花
 ミリシタ1周年！サンキュー生配信		2018/6/30	3	UNION!!		髙橋ミナミ、山口立花子、田所あずさ、山崎はるか、Machico、野村香菜子、諏訪彩花
+MTGリリイベ	09＆10	2018/8/12	1	花ざかりWeekend✿		4 Luxury [平山笑美、香里有佐、末柄里恵、髙橋ミナミ]
+MTGリリイベ	09＆10	2018/8/12	2	RED ZONE		4 Luxury [平山笑美、香里有佐、末柄里恵、髙橋ミナミ]
+MTGリリイベ	09＆10	2018/8/12	3	咲くは浮世の君花火		閃光☆HANABI団 [大関英里、渡部優衣、駒形友梨、上田麗奈、浜崎奈々]
+MTGリリイベ	09＆10	2018/8/12	4	BORN ON DREAM! 〜HANABI☆NIGHT〜		閃光☆HANABI団 [大関英里、渡部優衣、駒形友梨、上田麗奈、浜崎奈々]
+MTGリリイベ	09＆10	2018/8/12	5	Brand New Theater!		香里有佐、末柄里恵、平山笑美、髙橋ミナミ、駒形友梨、上田麗奈、大関英里、浜崎奈々、渡部優衣
+Animelo Summer Live 2018		2018/8/26	1	Brand New Theater!		山崎はるか、田所あずさ、Machico、愛美、麻倉もも、雨宮天、伊藤美来、郁原ゆう、木戸衣吹、香里有佐、諏訪彩花、夏川椎菜、平山笑美、藤井ゆきよ、南早紀
+Animelo Summer Live 2018		2018/8/26	2	Princess Be Ambitious!!	GAME Ver・メドレー	山崎はるか、諏訪彩花、木戸衣吹、伊藤美来、郁原ゆう
+Animelo Summer Live 2018		2018/8/26	3	Angelic Parade♪	GAME Ver・メドレー	Machico、平山笑美、香里有佐、麻倉もも、夏川椎菜
+Animelo Summer Live 2018		2018/8/26	4	FairyTaleじゃいられない	GAME Ver・メドレー	田所あずさ、南早紀、藤井ゆきよ、愛美、雨宮天
+Animelo Summer Live 2018		2018/8/26	5	UNION!!		山崎はるか、田所あずさ、Machico、愛美、麻倉もも、雨宮天、伊藤美来、郁原ゆう、木戸衣吹、香里有佐、諏訪彩花、夏川椎菜、平山笑美、藤井ゆきよ、南早紀
+TBリリイベ	01	2018/10/7	1	ビッグバンズバリボー!!!!!		駒形友梨、藤井ゆきよ、上田麗奈、末柄里恵、渡部優衣
+TBリリイベ	01	2018/10/7	2	DIAMOND DAYS		駒形友梨、藤井ゆきよ、上田麗奈、末柄里恵、渡部優衣
 ミリシタ感謝祭		2018/10/21	1	花ざかりWeekend✿		4 Luxury [平山笑美、香里有佐、髙橋ミナミ]  
 ミリシタ感謝祭		2018/10/21	2	Melty Fantasia		EScape [南早紀、阿部里果]  
 ミリシタ感謝祭		2018/10/21	3	昏き星、遠い月		夜想令嬢 -GRAC&E NOCTURNE- [小岩井ことり、藤井ゆきよ、野村香菜子]  
@@ -901,6 +1399,15 @@ HOTCHPOTCH FESTIV@L!! 	DAY2	2017/10/8	25	THE IDOLM@STER		今井麻美, 長谷川
 ミリシタ感謝祭		2018/10/21	7	待ち受けプリンス	M@STER VERSION	平山笑美、野村香菜子、愛美、小岩井ことり、桐谷蝶々、藤井ゆきよ  
 ミリシタ感謝祭		2018/10/21	8	ToP!!!!!!!!!!!!!	M@STER VERSION	渡部恵子、田所あずさ、香里有佐、種田梨沙、角元明日香  
 ミリシタ感謝祭		2018/10/21	9	Brand New Theater!		角元明日香、渡部恵子、小岩井ことり、香里有佐、髙橋ミナミ、愛美、種田梨沙、田所あずさ、桐谷蝶々、平山笑美、南早紀、阿部里果、野村香菜子、藤井ゆきよ
+TBリリイベ	02	2018/12/30	1	オーディナリィ・クローバー		田所あずさ、山口立花子、香里有佐、桐谷蝶々、夏川椎菜
+TBリリイベ	02	2018/12/30	2	DIAMOND DAYS		桐谷蝶々、山口立花子、田所あずさ、香里有佐、夏川椎菜
+TBリリイベ	03	2019/2/9	1	ラスト・アクトレス		髙橋ミナミ、阿部里果、渡部恵子、南早紀
+TBリリイベ	03	2019/2/9	2	DIAMOND DAYS		渡部恵子、南早紀、阿部里果、髙橋ミナミ
+MTGリリイベ	12＆13	2019/3/3	1	ハルマチ女子		りるきゃん 〜3 little candy〜[小笠原早紀、近藤唯、Machico]
+MTGリリイベ	12＆13	2019/3/3	2	彼氏になってよ。		りるきゃん 〜3 little candy〜[小笠原早紀、近藤唯、Machico]
+MTGリリイベ	12＆13	2019/3/3	3	ハーモニクス		D/Zeal [田所あずさ、愛美]
+MTGリリイベ	12＆13	2019/3/3	4	餞の鳥		D/Zeal [田所あずさ、愛美]
+MTGリリイベ	12＆13	2019/3/3	5	Brand New Theater!		小笠原早紀、Machico、田所あずさ、愛美、近藤唯
 6thLIVE TOUR UNI-ON@IR!!!!	仙台公演1日目	2019/4/27	1	Angelic Parade♪		角元明日香, 桐谷蝶々, 香里有佐, 末柄里恵, 平山笑美, 髙橋ミナミ, 近藤唯, 小笠原早紀, Machico, 麻倉もも, 田村奈央, 稲川英里, 夏川椎菜
 6thLIVE TOUR UNI-ON@IR!!!!	仙台公演1日目	2019/4/27	2	ピコピコIIKO！インベーダー		麻倉もも, 田村奈央, 稲川英里, 夏川椎菜
 6thLIVE TOUR UNI-ON@IR!!!!	仙台公演1日目	2019/4/27	3	スマイル体操	ピコピコ体操バージョン	麻倉もも, 田村奈央, 稲川英里, 夏川椎菜
@@ -956,6 +1463,11 @@ HOTCHPOTCH FESTIV@L!! 	DAY2	2017/10/8	25	THE IDOLM@STER		今井麻美, 長谷川
 6thLIVE TOUR UNI-ON@IR!!!!	仙台公演2日目	2019/4/28	25	DIAMOND DAYS		角元明日香, 桐谷蝶々, 香里有佐, 末柄里恵, 平山笑美, 髙橋ミナミ, 近藤唯, 小笠原早紀, Machico, 麻倉もも, 田村奈央, 稲川英里, 夏川椎菜
 6thLIVE TOUR UNI-ON@IR!!!!	仙台公演2日目	2019/4/28	26	UNION!!		角元明日香, 桐谷蝶々, 香里有佐, 末柄里恵, 平山笑美, 髙橋ミナミ, 近藤唯, 小笠原早紀, Machico, 麻倉もも, 田村奈央, 稲川英里, 夏川椎菜
 6thLIVE TOUR UNI-ON@IR!!!!	仙台公演2日目	2019/4/28	27	Brand New Theater!		角元明日香, 桐谷蝶々, 香里有佐, 末柄里恵, 平山笑美, 髙橋ミナミ, 近藤唯, 小笠原早紀, Machico, 麻倉もも, 田村奈央, 稲川英里, 夏川椎菜
+MTGリリイベ	14＆15	2019/5/4	1	だってあなたはプリンセス		Charlotte・Charlotte [諏訪彩花、郁原ゆう]
+MTGリリイベ	14＆15	2019/5/4	2	ミラージュ・ミラー		Charlotte・Charlotte [諏訪彩花、郁原ゆう]
+MTGリリイベ	14＆15	2019/5/4	3	月曜日のクリームソーダ		Jelly PoP Beans [中村温姫、戸田めぐみ、斉藤佑圭、渡部恵子]
+MTGリリイベ	14＆15	2019/5/4	4	I did＋I will		Jelly PoP Beans [中村温姫、戸田めぐみ、斉藤佑圭、渡部恵子]
+MTGリリイベ	14＆15	2019/5/4	5	Brand New Theater!		諏訪彩花、郁原ゆう、中村温姫、戸田めぐみ、斉藤佑圭、渡部恵子
 6thLIVE TOUR UNI-ON@IR!!!!	神戸公演1日目	2019/5/18	1	Princess Be Ambitious!!		原嶋あかり, 伊藤美来, 村川梨衣, 駒形友梨, 上田麗奈, 浜崎奈々, 渡部優衣, 大関英里, 諏訪彩花, 郁原ゆう, 山崎はるか, 木戸衣吹, 種田梨沙
 6thLIVE TOUR UNI-ON@IR!!!!	神戸公演1日目	2019/5/18	2	Episode. Tiara		山崎はるか, 木戸衣吹, 種田梨沙
 6thLIVE TOUR UNI-ON@IR!!!!	神戸公演1日目	2019/5/18	3	まっすぐ		山崎はるか, 木戸衣吹, 種田梨沙
@@ -1069,6 +1581,8 @@ HOTCHPOTCH FESTIV@L!! 	DAY2	2017/10/8	25	THE IDOLM@STER		今井麻美, 長谷川
 ミリシタ2周年！サンキュー生配信！		2019/7/6	1	Brand New Theater!		阿部里果、平山笑美、伊藤美来、中村温姫、郁原ゆう、斉藤佑圭  
 ミリシタ2周年！サンキュー生配信！		2019/7/6	2	UNION!!		阿部里果、平山笑美、伊藤美来、中村温姫、郁原ゆう、斉藤佑圭  
 ミリシタ2周年！サンキュー生配信！		2019/7/6	3	Flyers!!!		阿部里果、平山笑美、伊藤美来、中村温姫、郁原ゆう、斉藤佑圭  
+MTGリリイベ	18	2019/8/25	1	LEADER!!		若林直美、平田宏美、中村繪里子、長谷川明子、沼倉愛美
+MTGリリイベ	18	2019/8/25	2	Brand New Theater!		長谷川明子、平田宏美、若林直美、中村繪里子、沼倉愛美
 6thLIVE TOUR UNI-ON@IR!!!!	SSA公演1日目	2019/9/21	1	Brand New Theater!		原嶋あかり, 伊藤美来, 村川梨衣, 駒形友梨, 上田麗奈, 浜崎奈々, 渡部優衣, 大関英里, 愛美, 田所あずさ, 中村温姫, 戸田めぐみ, 斉藤佑圭, 渡部恵子, 角元明日香, 桐谷蝶々, 近藤唯, 小笠原早紀, Machico
 6thLIVE TOUR UNI-ON@IR!!!!	SSA公演1日目	2019/9/21	2	BORN ON DREAM! 〜HANABI☆NIGHT〜		駒形友梨, 上田麗奈, 浜崎奈々, 渡部優衣, 大関英里
 6thLIVE TOUR UNI-ON@IR!!!!	SSA公演1日目	2019/9/21	3	MOONY	打上げ☆HANABI ver	駒形友梨, 上田麗奈, 浜崎奈々, 渡部優衣, 大関英里
@@ -1126,6 +1640,64 @@ HOTCHPOTCH FESTIV@L!! 	DAY2	2017/10/8	25	THE IDOLM@STER		今井麻美, 長谷川
 6thLIVE TOUR UNI-ON@IR!!!!	SSA公演2日目	2019/9/22	26	UNION!!		諏訪彩花, 郁原ゆう, 山崎はるか, 木戸衣吹, 種田梨沙, 小岩井ことり, 藤井ゆきよ, 野村香菜子, 山口立花子, 阿部里果, 南早紀, 雨宮天, 香里有佐, 末柄里恵, 平山笑美, 髙橋ミナミ, 麻倉もも, 田村奈央, 稲川英里, 夏川椎菜
 6thLIVE TOUR UNI-ON@IR!!!!	SSA公演2日目	2019/9/22	27	Flyers!!!		諏訪彩花, 郁原ゆう, 山崎はるか, 木戸衣吹, 種田梨沙, 小岩井ことり, 藤井ゆきよ, 野村香菜子, 山口立花子, 阿部里果, 南早紀, 雨宮天, 香里有佐, 末柄里恵, 平山笑美, 髙橋ミナミ, 麻倉もも, 田村奈央, 稲川英里, 夏川椎菜
 6thLIVE TOUR UNI-ON@IR!!!!	SSA公演2日目	2019/9/22	28	Thank You!		諏訪彩花, 郁原ゆう, 山崎はるか, 木戸衣吹, 種田梨沙, 小岩井ことり, 藤井ゆきよ, 野村香菜子, 山口立花子, 阿部里果, 南早紀, 雨宮天, 香里有佐, 末柄里恵, 平山笑美, 髙橋ミナミ, 麻倉もも, 田村奈央, 稲川英里, 夏川椎菜
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	1	Beyond The Dream		アイドルマスターSideM(仲村宗悟, 寺島拓篤, 神原大地, 松岡禎丞, 菊池勇成, 熊谷健太郎, 濱健人, 増元拓也, 白井悠介, 益山武明, 深町寿成, 古畑恵介, 伊東健人, 榎木淳弥, 中島ヨシキ, 小松昌平, 笠間淳)
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	2	トレジャー・パーティー！		菊池勇成, 濱健人, 白井悠介
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	3	永遠(とわ)なる四銃士		仲村宗悟, 熊谷健太郎, 益山武明, 笠間淳
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	4	Baile Apasionado		古畑恵介, 伊東健人, 小松昌平
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	5	MEET THE WORLD!		アイドルマスターSideM(仲村宗悟, 寺島拓篤, 神原大地, 松岡禎丞, 菊池勇成, 熊谷健太郎, 濱健人, 増元拓也, 白井悠介, 益山武明, 深町寿成, 古畑恵介, 伊東健人, 榎木淳弥, 中島ヨシキ, 小松昌平, 笠間淳)
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	6	できたてEvo! Revo! Generation!		ニュージェネレーションズ (大橋彩香, 福原綾香, 原紗友里)
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	7	ドレミファクトリー！		U149 (今井麻夏, 春瀬なつみ, 小市眞琴, 佐藤亜美菜)
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	8	クレイジークレイジー		レイジー・レイジー (藍原ことみ, 髙野麻美)
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	9	美に入り彩を穿つ		羽衣小町 (立花理香, ルゥティン)
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	10	お願い！シンデレラ		シンデレラガールズ
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	11	Eternal Harmony		エターナルハーモニー (今井麻美, 郁原ゆう, 愛美, 諏訪彩花, 末柄里恵)
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	12	HOME, SWEET FRIENDSHIP		リコッタ (中村繪里子, 渡部恵子, 浜崎奈々, 村川梨衣, 渡部優衣)
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	13	深層マーメイド		沼倉愛美, Machico
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	14	Beat the World!!		平田宏美, 戸田めぐみ
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	15	Flyers!!!		765ミリオンスターズ (中村繪里子, 渡部恵子, 浜崎奈々, 村川梨衣, 渡部優衣, 今井麻美, 郁原ゆう, 愛美, 諏訪彩花, 末柄里恵, 平田宏美, 戸田めぐみ, 沼倉愛美, Machico)
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	16	PRIDE STAR		アイドルマスターSideM
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	17	DRAMATIC NONFICTION		仲村宗悟×西川貴教
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	18	勇敢なるキミへ		FRAME
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	19	バーニン・クールで輝いて		神速一魂
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	20	Study Equal Magic!		S.E.M
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	21	BRAND NEW FIELD		Jupiter
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY1	2019/10/19	22	DRIVE A LIVE		アイドルマスターSideM
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	1	READY!!		765PRO ALLSTARS (中村繪里子, 今井麻美, 仁後真耶子, 若林直美, たかはし智秋, 釘宮理恵, 平田宏美, 長谷川明子, 沼倉愛美)
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	2	Star!!		シンデレラガールズ
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	3	Welcome!!		ミリオンスターズ (駒形友梨, 上田麗奈, 浜崎奈々, 渡部優衣, 大関英里, 愛美, 田所あずさ, 香里有佐, 末柄里恵, 平山笑美, 髙橋ミナミ)
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	4	バレンタイン		仁後真耶子, 長谷川明子, 桃井はるこ
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	5	ヒカリのdestination		イルミネーションスターズ
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	6	ØωØver!!		*(Asterisk)
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	7	アルストロメリア		アルストロメリア
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	8	咲くは浮世の君花火		閃光☆HANABI団 (駒形友梨, 上田麗奈, 浜崎奈々, 渡部優衣, 大関英里)
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	9	LEADER!!		765PRO ALLSTARS (中村繪里子, 今井麻美, 仁後真耶子, 若林直美, たかはし智秋, 釘宮理恵, 平田宏美, 長谷川明子, 沼倉愛美)
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	10	夢咲きAfter school		放課後クライマックスガールズ
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	11	あんきら!?狂騒曲		HappyHappyTwin
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	12	花ざかりWeekend✿		4 Luxury (香里有佐, 末柄里恵, 平山笑美, 髙橋ミナミ)
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	13	自分REST@RT		765PRO ALLSTARS (中村繪里子, 今井麻美, 仁後真耶子, 若林直美, たかはし智秋, 釘宮理恵, 平田宏美, 長谷川明子, 沼倉愛美)
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	14	微熱S.O.S.!!		橋本みゆき
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	15	残酷よ希望となれ		結城アイラ
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	16	Tulip		LiPPS
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	17	バベルシティ・グレイス		アンティーカ
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	18	ハーモニクス		D/Zeal (愛美, 田所あずさ)
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	19	Wandering Dream Chaser		ストレイライト
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	20	∀NSWER		individuals
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	21	FairyTaleじゃいられない		結城アイラ, 今井麻美, 田所あずさ
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	22	ToP!!!!!!!!!!!!!		765PRO ALLSTARS (中村繪里子, 今井麻美, 仁後真耶子, 若林直美, たかはし智秋, 釘宮理恵, 平田宏美, 長谷川明子, 沼倉愛美)
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	23	Spread the Wings!!		シャイニーカラーズ
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	24	UNION!!		ミリオンスターズ (駒形友梨, 上田麗奈, 浜崎奈々, 渡部優衣, 大関英里, 愛美, 田所あずさ, 香里有佐, 末柄里恵, 平山笑美, 髙橋ミナミ, 木戸衣吹)
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	25	GOIN'!!!		シンデレラガールズ
+バンダイナムコエンターテインメントフェスティバル(2019)	DAY2	2019/10/20	26	The world is all one !!		765PRO ALLSTARS (中村繪里子, 今井麻美, 仁後真耶子, 若林直美, たかはし智秋, 釘宮理恵, 平田宏美, 長谷川明子, 沼倉愛美)
+MTGリリイベ	16＆17	2019/11/17	1	ピコピコIIKO! インベーダー		ピコピコプラネッツ[稲川英里、田村奈央、麻倉もも、夏川椎菜]
+MTGリリイベ	16＆17	2019/11/17	2	Get lol! Get lol! SONG		ピコピコプラネッツ[稲川英里、田村奈央、麻倉もも、夏川椎菜]
+MTGリリイベ	16＆17	2019/11/17	3	Episode. Tiara		STAR ELEMENTS [種田梨沙、山崎はるか、木戸衣吹]
+MTGリリイベ	16＆17	2019/11/17	4	ギブミーメタファー		STAR ELEMENTS [種田梨沙、山崎はるか、木戸衣吹]
+MTGリリイベ	16＆17	2019/11/17	5	Brand New Theater!		麻倉もも、種田梨沙、山崎はるか、夏川椎菜、木戸衣吹、稲川英里、田村奈央
+MTWリリイベ	02&03	2020/1/11	1	ラビットファー		Xs[長谷川明子、浅倉杏美、平田宏美]
+MTWリリイベ	02&03	2020/1/11	2	Dreamy Dream		Xs[長谷川明子、浅倉杏美、平田宏美]
+MTWリリイベ	02&03	2020/1/11	3	dans l'obscurité		Chrono-Lexica[阿部里果、伊藤美来、 斉藤佑圭、中村温姫]
+MTWリリイベ	02&03	2020/1/11	4	囚われのTeaTime		Chrono-Lexica[阿部里果、伊藤美来、 斉藤佑圭、中村温姫]
+MTWリリイベ	02&03	2020/1/11	5	Flyers!!!		阿部里果、中村温姫、伊藤美来、 斉藤佑圭、浅倉杏美、長谷川明子、平田宏美
 ミリシタ感謝祭 2019〜2020		2020/1/19	1	Flyers!!!		阿部里果、伊藤美来、郁原ゆう、小岩井ことり、香里有佐、斉藤佑圭、田所あずさ、中村温姫、沼倉愛美、長谷川明子、Machico、南早紀、山崎はるか
 ミリシタ感謝祭 2019〜2020		2020/1/19	2	未来飛行		山崎はるか
 ミリシタ感謝祭 2019〜2020		2020/1/19	3	dans l'obscurité		Chrono-Lexica[阿部里果、伊藤美来、斉藤佑圭、中村温姫]  
@@ -1217,6 +1789,26 @@ HOTCHPOTCH FESTIV@L!! 	DAY2	2017/10/8	25	THE IDOLM@STER		今井麻美, 長谷川
 ミリシタ4周年!!! Anniversary４you! 生配信		2021/7/4	1	Harmony 4 You		諏訪彩花、田所あずさ、香里有佐、Machico、藤井ゆきよ 
 ミリシタ4周年!!! Anniversary４you! 生配信		2021/7/4	2	Glow Map		諏訪彩花、田所あずさ、香里有佐、Machico、藤井ゆきよ 
 ミリシタ4周年!!! Anniversary４you! 生配信		2021/7/4	3	UNION!!		藤井ゆきよ、田所あずさ、諏訪彩花、Machico、香里有佐
+SEASON-@IR!!!!	BRIGHT DIAMOND	2021/10/9	1	ダイヤモンド・クラリティ		BRIGHT DIAMOND［原由実、香里有佐、諏訪彩花、Machico、山崎はるか、渡部恵子、桐谷蝶々、藤井ゆきよ、山口立花子］
+SEASON-@IR!!!!	BRIGHT DIAMOND	2021/10/9	2	シークレットジュエル 〜魅惑の金剛石〜		香里有佐、渡部恵子、桐谷蝶々、山崎はるか
+SEASON-@IR!!!!	BRIGHT DIAMOND	2021/10/9	3	DIAMOND JOKER		原由実、Machico、諏訪彩花、藤井ゆきよ
+SEASON-@IR!!!!	BRIGHT DIAMOND	2021/10/9	4	真夏のダイヤ☆		山崎はるか、山口立花子、香里有佐
+SEASON-@IR!!!!	BRIGHT DIAMOND	2021/10/9	5	EVERYDAY STARS!!		BRIGHT DIAMOND［原由実、香里有佐、諏訪彩花、Machico、山崎はるか、渡部恵子、桐谷蝶々、藤井ゆきよ、山口立花子］
+MTWリリイベ	06&07	2021/10/16	1	百花は月下に散りぬるを		花咲夜［小岩井ことり、郁原ゆう、南早紀］
+MTWリリイベ	06&07	2021/10/16	2	矛盾の月		花咲夜［小岩井ことり、郁原ゆう、南早紀］
+MTWリリイベ	06&07	2021/10/16	3	Super Duper		Jus-2-Mint［渡部優衣、大関英里］
+MTWリリイベ	06&07	2021/10/16	4	Hang In There!		Jus-2-Mint［渡部優衣、大関英里］
+MTWリリイベ	06&07	2021/10/16	5	Flyers!!!		小岩井ことり、郁原ゆう、南早紀、渡部優衣、大関英里
+MTWリリイベ	04&05	2021/10/24	1	Fermata in Rapsodia		ARCANA［原由実、たかはし智秋、今井麻美］
+MTWリリイベ	04&05	2021/10/24	2	DEpArture from THe life		ARCANA［原由実、たかはし智秋、今井麻美］
+MTWリリイベ	04&05	2021/10/24	3	Cherry Colored Love		Sherry 'n Cherry［山口立花子、髙橋ミナミ］
+MTWリリイベ	04&05	2021/10/24	4	夜と、明かりと。		Sherry 'n Cherry［山口立花子、髙橋ミナミ］
+MTWリリイベ	04&05	2021/10/24	5	Flyers!!!		原由実、たかはし智秋、今井麻美、山口立花子、髙橋ミナミ
+MTWリリイベ	13&14	2021/11/21	1	Arrive You 〜それが運命でも〜		TIntMe!［渡部恵子、稲川英里、原嶋あかり］
+MTWリリイベ	13&14	2021/11/21	2	ライラックにつつまれて		TIntMe!［渡部恵子、稲川英里、原嶋あかり］
+MTWリリイベ	13&14	2021/11/21	3	Black★Party		TRICK&TREAT［小笠原早紀、平山笑美］
+MTWリリイベ	13&14	2021/11/21	4	フシギトラベラー		TRICK&TREAT［小笠原早紀、平山笑美］
+MTWリリイベ	13&14	2021/11/21	5	Flyers!!!		渡部恵子、稲川英里、原嶋あかり、小笠原早紀、平山笑美
 ミリシタ感謝祭 2021～2022		2021/12/12	1	EVERYDAY STARS!!		近藤唯、角元明日香、大関英里、原嶋あかり、南早紀、香里有佐、阿部里果、郁原ゆう、平田宏美、駒形友梨、長谷川明子、諏訪彩花、小笠原早紀  
 ミリシタ感謝祭 2021～2022		2021/12/12	2	World Changer		平田宏美、郁原ゆう、長谷川明子
 ミリシタ感謝祭 2021～2022		2021/12/12	3	クルリウタ		角元明日香、小笠原早紀、香里有佐
@@ -1229,6 +1821,16 @@ HOTCHPOTCH FESTIV@L!! 	DAY2	2017/10/8	25	THE IDOLM@STER		今井麻美, 長谷川
 ミリシタ感謝祭 2021～2022		2021/12/12	10	トレフル・ド・ノエル		角元明日香、平田宏美、阿部里果
 ミリシタ感謝祭 2021～2022		2021/12/12	11	IGNITE		大関英里、南早紀、長谷川明子、平田宏美、駒形友梨、郁原ゆう、阿部里果、原嶋あかり、香里有佐、小笠原早紀、諏訪彩花、角元明日香、近藤唯
 ミリシタ感謝祭 2021～2022		2021/12/12	12	Harmony 4 You		近藤唯、角元明日香、大関英里、原嶋あかり、南早紀、香里有佐、阿部里果、郁原ゆう、平田宏美、駒形友梨、長谷川明子、諏訪彩花、小笠原早紀  
+MTWリリイベ	11&12	2022/1/16	1	Deep, Deep Blue		ダイヤモンドダイバー◇［中村繪里子、仁後真耶子］
+MTWリリイベ	11&12	2022/1/16	2	VIVA☆アクアリズム		ダイヤモンドダイバー◇［中村繪里子、仁後真耶子］
+MTWリリイベ	11&12	2022/1/16	3	Parade d’amour		オペラセリア・煌輝座［香里有佐、雨宮天、諏訪彩花］
+MTWリリイベ	11&12	2022/1/16	4	星宙のVoyage		オペラセリア・煌輝座［香里有佐、雨宮天、諏訪彩花］
+MTWリリイベ	11&12	2022/1/16	5	Flyers!!!		仁後真耶子、香里有佐、中村繪里子、諏訪彩花、雨宮天
+MTWリリイベ	08&09	2022/1/23	1	絶対的Performer		miraclesonic★expassion［浜崎奈々、角元明日香］
+MTWリリイベ	08&09	2022/1/23	2	My Evolution		miraclesonic★expassion［浜崎奈々、角元明日香］
+MTWリリイベ	08&09	2022/1/23	3	Special Wonderful Smile		Fleuranges［近藤唯、桐谷蝶々］
+MTWリリイベ	08&09	2022/1/23	4	旅立ちのコンパス		Fleuranges［近藤唯、桐谷蝶々］
+MTWリリイベ	08&09	2022/1/23	5	Flyers!!!		浜崎奈々、角元明日香、近藤唯、桐谷蝶々
 8thLIVE Twelw@ve	DAY1	2022/2/12	1	百花は月下に散りぬるを		郁原ゆう, 南早紀
 8thLIVE Twelw@ve	DAY1	2022/2/12	2	矛盾の月		郁原ゆう, 南早紀
 8thLIVE Twelw@ve	DAY1	2022/2/12	3	俠気乱舞		郁原ゆう, 南早紀
@@ -1281,9 +1883,71 @@ HOTCHPOTCH FESTIV@L!! 	DAY2	2017/10/8	25	THE IDOLM@STER		今井麻美, 長谷川
 8thLIVE Twelw@ve	DAY2	2022/2/13	24	ショコラブル*イブ		斉藤佑圭, 中村温姫, 夏川椎菜, 阿部里果, 大関英里, 渡部優衣, 近藤唯, 麻倉もも, 桐谷蝶々, 平山笑美, 小笠原早紀, 駒形友梨, 末柄里恵, 愛美, 野村香菜子, 山崎はるか, 田所あずさ, Machico
 8thLIVE Twelw@ve	DAY2	2022/2/13	25	Harmony 4 You		斉藤佑圭, 中村温姫, 夏川椎菜, 阿部里果, 大関英里, 渡部優衣, 近藤唯, 麻倉もも, 桐谷蝶々, 平山笑美, 小笠原早紀, 駒形友梨, 末柄里恵, 愛美, 野村香菜子, 山崎はるか, 田所あずさ, Machico
 8thLIVE Twelw@ve	DAY2	2022/2/13	26	Thank You!		斉藤佑圭, 中村温姫, 夏川椎菜, 阿部里果, 大関英里, 渡部優衣, 近藤唯, 麻倉もも, 桐谷蝶々, 平山笑美, 小笠原早紀, 駒形友梨, 末柄里恵, 愛美, 野村香菜子, 山崎はるか, 田所あずさ, Machico
+SEASON-@IR!!!!	CLEVER CLOVER	2022/2/27	1	Shamrock Vivace		CLEVER CLOVER［平田宏美、角元明日香、野村香菜子、阿部里果、髙橋ミナミ、渡部優衣、中村温姫、稲川英里］
+SEASON-@IR!!!!	CLEVER CLOVER	2022/2/27	2	Clover's Cry 〜神と神降ろしの少女〜		稲川英里、渡部優衣、髙橋ミナミ
+SEASON-@IR!!!!	CLEVER CLOVER	2022/2/27	3	産声とクラブ		中村温姫、野村香菜子
+SEASON-@IR!!!!	CLEVER CLOVER	2022/2/27	4	トレフル・ド・ノエル		角元明日香、野村香菜子、平田宏美、阿部里果
+SEASON-@IR!!!!	CLEVER CLOVER	2022/2/27	5	EVERYDAY STARS!!		CLEVER CLOVER［角元明日香、平田宏美、阿部里果、野村香菜子、髙橋ミナミ、渡部優衣、中村温姫］
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY1	2022/5/14	1	Dreaming!		アイドルマスターミリオンライブ！ (山崎はるか, 田所あずさ, Machico, 郁原ゆう, 南早紀, 小岩井ことり, 戸田めぐみ, 浜崎奈々, 角元明日香)
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY1	2022/5/14	2	百花は月下に散りぬるを		花咲夜 (郁原ゆう, 南早紀, 小岩井ことり)
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY1	2022/5/14	3	絶対的Performer		miraclesonic★expassion (戸田めぐみ, 浜崎奈々, 角元明日香)
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY1	2022/5/14	4	ABSOLUTE RUN!!!		ストロベリーポップムーン (山崎はるか, 田所あずさ, Machico)
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY1	2022/5/14	5	Harmony 4 You		アイドルマスターミリオンライブ！ (山崎はるか, 田所あずさ, Machico, 郁原ゆう, 南早紀, 小岩井ことり, 戸田めぐみ, 浜崎奈々, 角元明日香)
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY1	2022/5/14	6	SESSION!		プロジェクトルミナス (中村繪里子, 平田宏美, 三宅麻理恵, 五十嵐裕美, 山崎はるか, 黒木ほの香, 前川涼子, 田中あいみ)
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY1	2022/5/14	7	GR@TITUDE		プロジェクトルミナス (中村繪里子, 平田宏美, 三宅麻理恵, 五十嵐裕美, 山崎はるか, 黒木ほの香, 前川涼子, 田中あいみ)
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY1	2022/5/14	8	Shine!!		アイドルマスターシンデレラガールズ
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY1	2022/5/14	9	Let's Sail Away!!!		井上ほの花, 安齋由香里, 二ノ宮ゆい
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY1	2022/5/14	10	バベル		藍原ことみ, 青木志貴
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY1	2022/5/14	11	Trancing Pulse		福原綾香, 渕上舞, 松井恵理子
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY1	2022/5/14	12	GOIN'!!!		アイドルマスターシンデレラガールズ (※三宅麻理恵・五十嵐裕美を含む)
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	1	シャイノグラフィ		アイドルマスターシャイニーカラーズ
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	2	いつだって僕らは		ノクチル
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	3	OH MY GOD		シーズ
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	4	太陽キッス		放課後クライマックスガールズ
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	5	Hide & Attack		ストレイライト
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	6	スマイルシンフォニア		イルミネーションスターズ
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	7	ハピリリ		アルストロメリア
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	8	Black Reverie		アンティーカ
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	9	Dye the sky.		アイドルマスターシャイニーカラーズ
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	10	Growing Smiles!		アイドルマスターSideM
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	11	リトルハピネス		狩野翔, 児玉卓也, 三瓶由布子, 汐谷文康, 宮﨑雅也
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	12	ANYWHERE		神原大地, 渡辺紘, 深町寿成, 比留間俊哉, 笠間淳, 伊瀬結陸
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	13	RED HOT BEAT!!		小林大紀, 小松昌平, 濱野大輝, 浦尾岳大, 大塚剛央
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	14	We're the one		C.FIRST
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	15	夢色VOYAGER		F-LAGS
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	16	DRIVE A LIVE		アイドルマスターSideM
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	17	Beyond The Dream		感覚ピエロ, アイドルマスターSideM (High×Joker, Café Parade, THE 虎牙道, Legenders)
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	18	VOY@GER		THE IDOLM@STER FIVE STARS!!!!!(中村繪里子, 平田宏美, 大橋彩香, 髙野麻美, 山崎はるか, 南早紀, 神原大地, 深町寿成, 関根瞳, 芝崎典子)
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	19	POPLINKS TUNE!!!!!		THE IDOLM@STER FIVE STARS!!!!!(中村繪里子, 平田宏美, 大橋彩香, 髙野麻美, 山崎はるか, 南早紀, 神原大地, 深町寿成, 関根瞳, 芝崎典子)
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	20	なんどでも笑おう		THE IDOLM@STER FIVE STARS!!!!!(中村繪里子, 平田宏美, 大橋彩香, 髙野麻美, 山崎はるか, 南早紀, 神原大地, 深町寿成, 関根瞳, 芝崎典子)
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	21	CHANGE!!!!		765PRO ALLSTARS(中村繪里子, 今井麻美, 仁後真耶子, 若林直美, たかはし智秋, 釘宮理恵, 平田宏美, 長谷川明子)
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	22	Fate of the World		中村繪里子, 今井麻美, 長谷川明子
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	23	キラメキラリ		仁後真耶子, 若林直美
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	24	my song		たかはし智秋, 釘宮理恵, 平田宏美
+バンダイナムコエンターテインメントフェスティバル 2nd	DAY2	2022/5/15	25	自分REST@RT		765PRO ALLSTARS(中村繪里子, 今井麻美, 仁後真耶子, 若林直美, たかはし智秋, 釘宮理恵, 平田宏美, 長谷川明子)
+SEASON-@IR!!!!!	LOVERS HEART	2022/6/11	1	空色♡ Birthday Card		LOVERS HEART［中村繪里子、小岩井ことり、大関英里、伊藤美来、木戸衣吹、浜崎奈々、今井麻美、仁後真耶子、平山笑美、駒形友梨］
+SEASON-@IR!!!!!	LOVERS HEART	2022/6/11	2	LOVE is GAME		大関英里、小岩井ことり、仁後真耶子、伊藤美来
+SEASON-@IR!!!!!	LOVERS HEART	2022/6/11	3	紙・心・ペン・心 - SHISHINPENSHIN -		今井麻美、駒形友梨、浜崎奈々、平山笑美
+SEASON-@IR!!!!!	LOVERS HEART	2022/6/11	4	CHEER UP! HEARTS UP!		伊藤美来、木戸衣吹、中村繪里子
+SEASON-@IR!!!!!	LOVERS HEART	2022/6/11	5	EVERYDAY STARS!!		LOVERS HEART［中村繪里子、小岩井ことり、大関英里、伊藤美来、木戸衣吹、浜崎奈々、今井麻美、仁後真耶子、平山笑美、駒形友梨］
+MTWリリイベ	15&16	2022/6/18	1	深紅のパシオン		chicAAmor［野村香菜子、末柄里恵、駒形友梨、愛美］
+MTWリリイベ	15&16	2022/6/18	2	Paradox of LOVE		chicAAmor［野村香菜子、末柄里恵、駒形友梨、愛美］
+MTWリリイベ	15&16	2022/6/18	3	ReTale		≡君彩≡［藤井ゆきよ、木戸衣吹］
+MTWリリイベ	15&16	2022/6/18	4	パンとフィルム		≡君彩≡［藤井ゆきよ、木戸衣吹］
+MTWリリイベ	15&16	2022/6/18	5	Flyers!!!		野村香菜子、末柄里恵、駒形友梨、愛美、藤井ゆきよ、木戸衣吹
 「私」たちの描いた軌跡　ミリシタ5周年 生配信		2022/7/3	1	夢にかけるRainbow		原嶋あかり、田所あずさ、南早紀、愛美、近藤唯 
 「私」たちの描いた軌跡　ミリシタ5周年 生配信		2022/7/3	2	Criminally Dinner 〜正餐とイーヴルナイフ〜		南早紀、近藤唯、田所あずさ、原嶋あかり、愛美
 「私」たちの描いた軌跡　ミリシタ5周年 生配信		2022/7/3	3	Brand New Theater!		原嶋あかり、田所あずさ、南早紀、愛美、近藤唯
+MTWリリイベ	17&18	2022/8/14	1	フリースタイル・トップアイドル！		ARMooo［若林直美、下田麻美］
+MTWリリイベ	17&18	2022/8/14	2	ウェイ・ダ・アイドル		ARMooo［若林直美、下田麻美］
+MTWリリイベ	17&18	2022/8/14	3	ABSOLUTE RUN!!!		ストロベリーポップムーン［Machico、山崎はるか、田所あずさ］
+MTWリリイベ	17&18	2022/8/14	4	Be proud		ストロベリーポップムーン［Machico、山崎はるか、田所あずさ］
+MTWリリイベ	17&18	2022/8/14	5	Flyers!!!		田所あずさ、Machico、山崎はるか、若林直美、下田麻美
+SEASON-@IR!!!!	SHADE OF SPADE	2022/10/9	1	ESPADA		長谷川明子、田所あずさ、小笠原早紀、近藤唯、原嶋あかり、末柄里恵、南早紀、下田麻美、沼倉愛美、郁原ゆう、斉藤佑圭
+SEASON-@IR!!!!	SHADE OF SPADE	2022/10/9	2	Criminally Dinner 〜正餐とイーヴルナイフ〜		近藤唯、長谷川明子、原嶋あかり、田所あずさ
+SEASON-@IR!!!!	SHADE OF SPADE	2022/10/9	3	スペードのQ		郁原ゆう、斉藤佑圭、下田麻美
+SEASON-@IR!!!!	SHADE OF SPADE	2022/10/9	4	KING of SPADE		小笠原早紀、沼倉愛美、南早紀、末柄里恵
+SEASON-@IR!!!!	SHADE OF SPADE	2022/10/9	5	EVERYDAY STARS!!		長谷川明子、田所あずさ、小笠原早紀、近藤唯、原嶋あかり、末柄里恵、南早紀、下田麻美、沼倉愛美、郁原ゆう、斉藤佑圭
 9thLIVE ChoruSp@rkle!!	DAY1	2023/1/14	1	夢にかけるRainbow		Machico, 平山笑美, 近藤唯, 角元明日香, 南早紀, 渡部恵子, 諏訪彩花, 末柄里恵, 原嶋あかり, 伊藤美来, 野村香菜子, 麻倉もも, 浜崎奈々, 桐谷蝶々, 夏川椎菜, 渡部優衣
 9thLIVE ChoruSp@rkle!!	DAY1	2023/1/14	2	brave HARMONY	ChoruSp@rkle!! MIX	浜崎奈々, 夏川椎菜, Machico, 末柄里恵
 9thLIVE ChoruSp@rkle!!	DAY1	2023/1/14	3	稲妻スピリット		渡部優衣
@@ -1346,6 +2010,91 @@ HOTCHPOTCH FESTIV@L!! 	DAY2	2017/10/8	25	THE IDOLM@STER		今井麻美, 長谷川
 9thLIVE ChoruSp@rkle!!	DAY2	2023/1/15	29	DIAMOND DAYS	ChoruSp@rkle!! MIX	山崎はるか, 田所あずさ, 稲川英里, 雨宮天, 田村奈央, 香里有佐, 大関英里, 駒形友梨, 小岩井ことり, 藤井ゆきよ, 斉藤佑圭, 小笠原早紀, 髙橋ミナミ, 阿部里果, 木戸衣吹, 中村温姫
 9thLIVE ChoruSp@rkle!!	DAY2	2023/1/15	30	セブンカウント		山崎はるか, 田所あずさ, 稲川英里, 雨宮天, 田村奈央, 香里有佐, 大関英里, 駒形友梨, 小岩井ことり, 藤井ゆきよ, 斉藤佑圭, 小笠原早紀, 髙橋ミナミ, 阿部里果, 木戸衣吹, 中村温姫, 山口立花子
 9thLIVE ChoruSp@rkle!!	DAY2	2023/1/15	31	Thank You!	MR MIX	山崎はるか, 田所あずさ, 稲川英里, 雨宮天, 田村奈央, 香里有佐, 大関英里, 駒形友梨, 小岩井ことり, 藤井ゆきよ, 斉藤佑圭, 小笠原早紀, 髙橋ミナミ, 阿部里果, 木戸衣吹, 中村温姫, 山口立花子
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	1	THE IDOLM@STER		765PRO ALLSTARS(中村繪里子 今井麻美 長谷川明子 浅倉杏美 仁後真耶子 平田宏美 釘宮理恵 若林直美 下田麻美 沼倉愛美)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	2	Shine!!		シンデレラガールズ
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	3	Glow Map		ミリオンライブ！(山崎はるか, 田所あずさ, Machico, 稲川英里, 原嶋あかり, 渡部恵子, 郁原ゆう, 南早紀, 小岩井ことり, 角元明日香, 桐谷蝶々)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	4	DRIVE A LIVE		SideM
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	5	Resonance⁺		シャイニーカラーズ
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	6	ビーチブレイバー		放課後クライマックスガールズ (河野ひより, 白石晴香, 永井真里子, 丸岡和佳奈, 涼本あきほ)+ 沼倉愛美, 東山奈央, 黒沢ともよ, 堀江瞬, 高塚智人
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	7	ドレミファクトリー！		U149 第3芸能課 (今井麻夏, 黒沢ともよ, 集貝はな)+ 仁後真耶子, 下田麻美, 稲川英里, 原嶋あかり, 渡部恵子, 矢野奨吾, 古畑恵介, 河野ひより
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	8	はるかぜバトン		もふもふえん (矢野奨吾, 古畑恵介)+ Cleasky (角元明日香, 桐谷蝶々)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	9	shiny smile		Cleasky (角元明日香, 桐谷蝶々), ノクチル (和久井優, 土屋李央, 田嶌紗蘭, 岡咲美保)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	10	夏時間グラフィティ		ストロベリーポップムーン (山崎はるか, 田所あずさ, Machico), 放課後クライマックスガールズ (河野ひより, 白石晴香, 永井真里子, 丸岡和佳奈, 涼本あきほ)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	11	Reason!!		765PRO ALLSTARS(中村繪里子 今井麻美 長谷川明子 浅倉杏美 仁後真耶子 平田宏美 釘宮理恵 若林直美 下田麻美 沼倉愛美)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	12	虹色letters		Cleasky (角元明日香, 桐谷蝶々)+ 白石晴香, 田嶌紗蘭
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	13	僕らだけの未来の空		ノクチル (和久井優, 土屋李央, 田嶌紗蘭, 岡咲美保)+ Triad Primus (福原綾香, 松井恵理子, 渕上舞)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	14	秘密のメモリーズ		浅倉杏美, 平田宏美, 松井恵理子, 渕上舞, 永井真里子, 涼本あきほ
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	15	Arrive You 〜それが運命でも〜		TIntMe! (稲川英里, 原嶋あかり, 渡部恵子)+ U149 第3芸能課 (今井麻夏, 黒沢ともよ, 集貝はな)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	16	百花は月下に散りぬるを		花咲夜 (郁原ゆう, 南早紀, 小岩井ことり)+ 花井美春, 丸岡和佳奈
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	17	Gaze and Gaze		フォーリンシーサイド (東山奈央, 花井美春)+ 和久井優, 土屋李央
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	18	エージェント夜を往く		SideM
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	19	GO MY WAY!!		中村繪里子, 寺島拓篤
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	20	JOKER➚オールマイティ		長島光那, 涼本あきほ, 若林直美, 幸村恵理
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	21	I'm so free!		長谷川明子, Machico, 和久井優, 岡咲美保
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	22	ラ♥︎ブ♥︎リ♥︎		釘宮理恵, 松井恵理子, 南早紀, 土屋李央
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	23	Get lol! Get lol! SONG		仁後真耶子, 堀江瞬
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	24	絶対正義 EVERY DAY		河野ひより, 稲川英里, 仲村宗悟
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	25	スパイスパラダイス		寺島拓篤, 河野ひより, 白石晴香, 永井真里子, 丸岡和佳奈, 涼本あきほ, 田中有紀
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	26	Let's get a chance		ミリオンライブ！(山崎はるか, 田所あずさ, Machico, 稲川英里, 原嶋あかり, 渡部恵子, 郁原ゆう, 南早紀, 小岩井ことり, 角元明日香, 桐谷蝶々)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	27	ABSOLUTE RUN!!!		ストロベリーポップムーン (山崎はるか, 田所あずさ, Machico)+ 白石晴香, 丸岡和佳奈, 田嶌紗蘭, 岡咲美保
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	28	BRAND NEW FIELD		Jupiter (寺島拓篤, 神原大地)+ 長谷川明子, 沼倉愛美
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	29	Dye the sky.		今井麻美, 福原綾香, 田所あずさ
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	30	流れ星キセキ		中村繪里子, 山崎はるか, 仲村宗悟
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	31	ハイファイ☆デイズ		シャイニーカラーズ
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	32	True Horizon		仲村宗悟, 寺島拓篤, 伊瀬結陸
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	33	FairyTaleじゃいられない		シンデレラガールズ
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	34	We're the one		C.FIRST (伊瀬結陸, 宮﨑雅也, 大塚剛央)+ 平田宏美, 北原沙弥香, 和久井優
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	35	Transcending The World		ストレイライト (田中有紀, 幸村恵理, 北原沙弥香)+ 長島光那, 田辺留依, 仲村宗悟, 寺島拓篤, 神原大地
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	36	Needle Light		サイバーグラス (長島光那, 田辺留依)+ 若林直美
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	37	Platinum MASK		Beit (堀江瞬, 高塚智人)+ 千菅春香, 桜咲千依, 郁原ゆう, 小岩井ことり
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	38	アンデッド・ダンスロック		エルドリッチ・ロアテラー (千菅春香, 桜咲千依)+ 浅倉杏美, 平田宏美
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	39	Tulip		神原大地, 堀江瞬, 高塚智人, 矢野奨吾, 古畑恵介, 宮﨑雅也, 大塚剛央
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	40	Trancing Pulse		Triad Primus (福原綾香, 松井恵理子, 渕上舞)+ C.FIRST (伊瀬結陸, 宮﨑雅也, 大塚剛央),ストレイライト (田中有紀, 幸村恵理, 北原沙弥香)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	41	CRYST@LOUD		全員(中村繪里子 今井麻美 長谷川明子 浅倉杏美 仁後真耶子 平田宏美 釘宮理恵 若林直美 下田麻美 沼倉愛美, 山崎はるか, 田所あずさ, Machico, 稲川英里, 原嶋あかり, 渡部恵子, 郁原ゆう, 南早紀, 小岩井ことり, 角元明日香, 桐谷蝶々, ……)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY1	2023/2/11	42	アイ MUST GO!		全員 (※白石晴香を除く)(中村繪里子 今井麻美 長谷川明子 浅倉杏美 仁後真耶子 平田宏美 釘宮理恵 若林直美 下田麻美 沼倉愛美, 山崎はるか, 田所あずさ, Machico, 稲川英里, 原嶋あかり, 渡部恵子, 郁原ゆう, 南早紀, 小岩井ことり, 角元明日香, 桐谷蝶々, ……)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	1	シャイノグラフィ		シャイニーカラーズ
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	2	Growing Smiles!		SideM
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	3	Flyers!!!		ミリオンライブ！(斉藤佑圭, 中村温姫, 阿部里果, 駒形友梨, 浜崎奈々, 渡部優衣, 大関英里, 香里有佐, 末柄里恵, 平山笑美, 髙橋ミナミ)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	4	BEYOND THE STARLIGHT		シンデレラガールズ
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	5	Happy!		765PRO ALLSTARS(中村繪里子 今井麻美 長谷川明子 浅倉杏美 仁後真耶子 平田宏美 釘宮理恵 若林直美 下田麻美 沼倉愛美)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	6	ヒカリのdestination		中村繪里子, 今井麻美, 長谷川明子
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	7	O-Ku-Ri-Mo-NoSunday!		miroir (立花日菜, 長江里加)+ 下田麻美, 黒木ほの香, 前川涼子
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	8	あんきら!?狂騒曲		HappyHappyTwin (五十嵐裕美, 松嵜麗)+ 斉藤佑圭, 渡部優衣, 三瓶由布子, 比留間俊哉, 浦尾岳大, 関根瞳, 峯田茉優, 希水しお
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	9	ラブ・ボナペティート		アルストロメリア (黒木ほの香, 前川涼子, 芝崎典子)+ Café Parade (狩野翔, 児玉卓也, 小林大紀), 浅倉杏美, 釘宮理恵
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	10	Pavé Étoiles		Café Parade (狩野翔, 児玉卓也, 小林大紀)+ アンティーカ (礒部花凜, 菅沼千紗, 八巻アンナ, 希水しお, 結名美月)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	11	太陽キッス		シンデレラガールズ
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	12	キラメキラリ		仁後真耶子, 松嵜麗, 中村温姫, 狩野翔, 黒木ほの香
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	13	きゅんっ！ヴァンパイアガール		藍原ことみ, 菅沼千紗, 芝崎典子
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	14	Treasure☆		F-LAGS (三瓶由布子, 比留間俊哉, 浦尾岳大), 閃光☆HANABI団 (駒形友梨, 浜崎奈々, 渡部優衣, 大関英里)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	15	Study Equal Magic!		長谷川明子, 五十嵐裕美, 前川涼子
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	16	ココロ☆エクササイズ		小市眞琴, 斉藤佑圭, 浜崎奈々, 熊谷健太郎, 濱健人, 増元拓也, 峯田茉優, 紫月杏朱彩
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	17	恋のHamburg♪		大関英里, 増元拓也, 礒部花凜
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	18	学祭革命夜明け前		沼倉愛美, 河瀬茉希, 中村温姫, 児玉卓也, 小林大紀
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	19	虹色ミラクル		シャイニーカラーズ
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	20	バーニン・クールで輝いて		ミリオンライブ！(斉藤佑圭, 中村温姫, 阿部里果, 駒形友梨, 浜崎奈々, 渡部優衣, 大関英里, 香里有佐, 末柄里恵, 平山笑美, 髙橋ミナミ)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	21	Friendly Smile		長谷川明子, 原紗友里, 峯田茉優
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	22	Plus 1 Good Day!		FRAME (熊谷健太郎, 濱健人, 増元拓也) + 小市眞琴, 生田輝, 駒形友梨, 平山笑美, 関根瞳, 紫月杏朱彩
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	23	♡Cupids!		F-LAGS (三瓶由布子, 比留間俊哉, 浦尾岳大) + 若林直美
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	24	ALIVE		今井麻美, 鈴木みのり, 香里有佐, 山根綺
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	25	アライアンス・スターダスト		ZWEIGLANZ (茅原実里, 高橋李依)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	26	レッド・ソール		Flamme Martini (河瀬茉希, 原田彩楓, 松田颯水, 鈴木みのり)+ 末柄里恵, 髙橋ミナミ, 山根綺, 茅原実里
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	27	dans l'obscurité		Chrono-Lexica (斉藤佑圭, 中村温姫, 阿部里果)+ アンティーカ (礒部花凜, 菅沼千紗, 八巻アンナ, 希水しお, 結名美月)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	28	純白トロイメライ		アンティーカ (礒部花凜, 菅沼千紗, 八巻アンナ, 希水しお, 結名美月)+ Dimension-3 (藍原ことみ, 青木志貴)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	29	バベル		Dimension-3 (藍原ことみ, 青木志貴) + シーズ (紫月杏朱彩, 山根綺)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	30	Fly and Fly		シーズ (紫月杏朱彩, 山根綺)+ ZWEIGLANZ (茅原実里, 高橋李依)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	31	オーバーマスター		Threat Sign (原紗友里, 小市眞琴, 生田輝)+ 長谷川明子, 沼倉愛美
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	32	Raise the FLAG		SideM
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	33	Yes! Party time!!		765PRO ALLSTARS(中村繪里子 今井麻美 長谷川明子 浅倉杏美 仁後真耶子 平田宏美 釘宮理恵 若林直美 下田麻美 沼倉愛美)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	34	Happy Funny Lucky		イルミネーションスターズ+ HappyHappyTwin (五十嵐裕美, 松嵜麗), miroir (立花日菜, 長江里加)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	35	Bet your intuition!		Flamme Martini (河瀬茉希, 原田彩楓, 松田颯水, 鈴木みのり),4 Luxury (香里有佐, 末柄里恵, 平山笑美, 髙橋ミナミ)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	36	SWEET♡STEP		FRAME (熊谷健太郎, 濱健人, 増元拓也), Café Parade (狩野翔, 児玉卓也, 小林大紀),F-LAGS (三瓶由布子, 比留間俊哉, 浦尾岳大)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	37	MOON NIGHTのせいにして		平田宏美, 青木志貴, 河瀬茉希, 松田颯水, 八巻アンナ
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	38	花ざかりWeekend✿		4 Luxury (香里有佐, 末柄里恵, 平山笑美, 髙橋ミナミ)+ 若林直美, 原田彩楓, 芝崎典子
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	39	待ち受けプリンス		釘宮理恵, 立花日菜, 長江里加, 小林大紀, 関根瞳, 結名美月
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	40	咲くは浮世の君花火		閃光☆HANABI団 (駒形友梨, 浜崎奈々, 渡部優衣, 大関英里)+ 原紗友里, 小市眞琴, 生田輝, 熊谷健太郎, 濱健人, 増元拓也, 下田麻美
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	41	Destiny		765PRO ALLSTARS(中村繪里子 今井麻美 長谷川明子 浅倉杏美 仁後真耶子 平田宏美 釘宮理恵 若林直美 下田麻美 沼倉愛美)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	42	CRYST@LOUD		全員(中村繪里子 今井麻美 長谷川明子 浅倉杏美 仁後真耶子 平田宏美 釘宮理恵 若林直美 下田麻美 沼倉愛美, 斉藤佑圭, 中村温姫, 阿部里果, 駒形友梨, 浜崎奈々, 渡部優衣, 大関英里, 香里有佐, 末柄里恵, 平山笑美, 髙橋ミナミ,……)
+ M@STERS OF IDOL WORLD!!!!! 2023	DAY2	2023/2/12	43	M@STERPIECE		全員(中村繪里子 今井麻美 長谷川明子 浅倉杏美 仁後真耶子 平田宏美 釘宮理恵 若林直美 下田麻美 沼倉愛美, 斉藤佑圭, 中村温姫, 阿部里果, 駒形友梨, 浜崎奈々, 渡部優衣, 大関英里, 香里有佐, 末柄里恵, 平山笑美, 髙橋ミナミ,……)
 10thLIVE TOUR Act-1 H@PPY 4 YOU!	DAY1	2023/4/22	1	Thank You!		山崎はるか, 小笠原早紀, 角元明日香, 郁原ゆう, 斉藤佑圭, 末柄里恵, 種田梨沙, 中村温姫, 夏川椎菜, 野村香菜子, 浜崎奈々, 平山笑美, 藤井ゆきよ, 渡部恵子, 渡部優衣
 10thLIVE TOUR Act-1 H@PPY 4 YOU!	DAY1	2023/4/22	2	素敵なキセキ		山崎はるか
 10thLIVE TOUR Act-1 H@PPY 4 YOU!	DAY1	2023/4/22	3	ハッピー☆ラッキー☆ジェットマシーン		渡部優衣
@@ -1406,6 +2155,12 @@ HOTCHPOTCH FESTIV@L!! 	DAY2	2017/10/8	25	THE IDOLM@STER		今井麻美, 長谷川
 10thLIVE TOUR Act-1 H@PPY 4 YOU!	DAY2	2023/4/23	28	Dreaming!		Machico, 愛美, 麻倉もも, 阿部里果, 稲川英里, 大関英里, 木戸衣吹, 桐谷蝶々, 小岩井ことり, 駒形友梨, 近藤唯, 諏訪彩花, 髙橋ミナミ, 原嶋あかり, 山口立花子
 10thLIVE TOUR Act-1 H@PPY 4 YOU!	DAY2	2023/4/23	29	Crossing!		Machico, 愛美, 麻倉もも, 阿部里果, 稲川英里, 大関英里, 木戸衣吹, 桐谷蝶々, 小岩井ことり, 駒形友梨, 近藤唯, 諏訪彩花, 髙橋ミナミ, 原嶋あかり, 山口立花子
 10thLIVE TOUR Act-1 H@PPY 4 YOU!	DAY2	2023/4/23	30	Thank You!		Machico, 愛美, 麻倉もも, 阿部里果, 稲川英里, 大関英里, 木戸衣吹, 桐谷蝶々, 小岩井ことり, 駒形友梨, 近藤唯, 諏訪彩花, 髙橋ミナミ, 原嶋あかり, 山口立花子
+MILLION RADIO! SPECIAL PARTY	04 第一回＆第二回	2023/6/24	1	U・N・M・E・I ライブ	Medley Ver.	麻倉もも、山崎はるか、田所あずさ
+MILLION RADIO! SPECIAL PARTY	04 第一回＆第二回	2023/6/24	2	ターンオンタイム！	Medley Ver.	麻倉もも、山崎はるか、田所あずさ
+MILLION RADIO! SPECIAL PARTY	04 第一回＆第二回	2023/6/24	3	ENDLESS TOUR		麻倉もも、山崎はるか、田所あずさ
+MILLION RADIO! SPECIAL PARTY	04 第一回＆第二回	2023/6/24	4	電波感傷		オフィウクス［南早紀、香里有佐］
+MILLION RADIO! SPECIAL PARTY	04 第一回＆第二回	2023/6/24	5	SECOND LIVINGROOM		山崎はるか、田所あずさ、麻倉もも
+MILLION RADIO! SPECIAL PARTY	04 第一回＆第二回	2023/6/24	6	Thank You!		南早紀、田所あずさ、山崎はるか、麻倉もも、香里有佐
 10thLIVE TOUR Act-2 5 TO SP@RKLE!!	DAY1	2023/7/29	1	Brand New Theater!		山崎はるか, 阿部里果, 雨宮天, 小笠原早紀, 角元明日香, 木戸衣吹, 駒形友梨, 末柄里恵, 田村奈央, 野村香菜子, 浜崎奈々, 平山笑美, 藤井ゆきよ, 南早紀, 渡部恵子
 10thLIVE TOUR Act-2 5 TO SP@RKLE!!	DAY1	2023/7/29	2	未来系ドリーマー		山崎はるか
 10thLIVE TOUR Act-2 5 TO SP@RKLE!!	DAY1	2023/7/29	3	Hearty!!		藤井ゆきよ
@@ -1601,6 +2356,13 @@ HOTCHPOTCH FESTIV@L!! 	DAY2	2017/10/8	25	THE IDOLM@STER		今井麻美, 長谷川
 10thLIVE TOUR Act-4 MILLION THE@TER!!!!	DAY2	2024/2/25	42	UNION!!		山崎はるか, 田所あずさ, Machico, 種田梨沙, 角元明日香, 大関英里, 藤井ゆきよ, 諏訪彩花, 麻倉もも, 小笠原早紀, 夏川椎菜, 中村温姫, 伊藤美来, 駒形友梨, 村川梨衣, 上田麗奈, 原嶋あかり, 小岩井ことり, 郁原ゆう, 雨宮天, 田村奈央, 木戸衣吹, 渡部優衣, 野村香菜子, 髙橋ミナミ, 稲川英里, 末柄里恵, 桐谷蝶々, 浜崎奈々, 阿部里果, 近藤唯, 山口立花子, 斉藤佑圭, 平山笑美, 渡部恵子, 愛美, 南早紀, 香里有佐
 10thLIVE TOUR Act-4 MILLION THE@TER!!!!	DAY2	2024/2/25	43	Crossing!		山崎はるか, 田所あずさ, Machico, 種田梨沙, 角元明日香, 大関英里, 藤井ゆきよ, 諏訪彩花, 麻倉もも, 小笠原早紀, 夏川椎菜, 中村温姫, 伊藤美来, 駒形友梨, 村川梨衣, 上田麗奈, 原嶋あかり, 小岩井ことり, 郁原ゆう, 雨宮天, 田村奈央, 木戸衣吹, 渡部優衣, 野村香菜子, 髙橋ミナミ, 稲川英里, 末柄里恵, 桐谷蝶々, 浜崎奈々, 阿部里果, 近藤唯, 山口立花子, 斉藤佑圭, 平山笑美, 渡部恵子, 愛美, 南早紀, 香里有佐
 10thLIVE TOUR Act-4 MILLION THE@TER!!!!	DAY2	2024/2/25	44	Thank You!		山崎はるか, 田所あずさ, Machico, 種田梨沙, 角元明日香, 大関英里, 藤井ゆきよ, 諏訪彩花, 麻倉もも, 小笠原早紀, 夏川椎菜, 中村温姫, 伊藤美来, 駒形友梨, 村川梨衣, 上田麗奈, 原嶋あかり, 小岩井ことり, 郁原ゆう, 雨宮天, 戸田めぐみ, 田村奈央, 木戸衣吹, 渡部優衣, 野村香菜子, 髙橋ミナミ, 稲川英里, 末柄里恵, 桐谷蝶々, 浜崎奈々, 阿部里果, 近藤唯, 山口立花子, 斉藤佑圭, 平山笑美, 渡部恵子, 愛美, 南早紀, 香里有佐
+MILLION RADIO! SPECIAL PARTY	05	2024/5/12	1	Cherry Colored Love		末柄里恵、山崎はるか
+MILLION RADIO! SPECIAL PARTY	05	2024/5/12	2	Marionetteは眠らない		麻倉もも、野村香菜子
+MILLION RADIO! SPECIAL PARTY	05	2024/5/12	3	スペードのQ		駒形友梨、田所あずさ
+MILLION RADIO! SPECIAL PARTY	05	2024/5/12	4	プリムラ		末柄里恵、駒形友梨、野村香菜子
+MILLION RADIO! SPECIAL PARTY	05	2024/5/12	5	さんぶんのいち		田所あずさ、山崎はるか、麻倉もも
+MILLION RADIO! SPECIAL PARTY	05	2024/5/12	4	KING of SPADE		小笠原早紀、沼倉愛美、南早紀、末柄里恵
+MILLION RADIO! SPECIAL PARTY	05	2024/5/12	5	EVERYDAY STARS!!		長谷川明子、田所あずさ、小笠原早紀、近藤唯、原嶋あかり、末柄里恵、南早紀、下田麻美、沼倉愛美、郁原ゆう、斉藤佑圭
 `;
 const cv_data = `
 中村繪里子	#e22b30	天海春香

@@ -22,28 +22,38 @@
 </head>
 <body>
     <nav class="navbar sticky-top navbar-primary bg-primary text-light p-0" id="main_navbar">
+        <div class="container-fluid">
+            <h1 class="h3">ミリオンライブ！ライブ歌唱検索</h1>
+            <div class="dropdown_container">
+                <select  class="form-select form-select-sm" id="cv_select1" style="font-size:large; font-weight: bold;">
+                </select>
+                <select  class="form-select form-select-sm"   id="cv_select2" style="font-size:large; font-weight: bold;">
+                </select> 
+            </div>
+            <div class="container-fluid">
 
-        <h1 class="h3">ミリオンライブ！ライブ歌唱検索</h1>
+            </div>
 
-        <div class="dropdown_container">
-            <select  class="form-select" id="cv_select" style="font-size:large; font-weight: bold;">
-            </select>
+
         </div>
+
+
+
 
 
     </nav>
 
     <div class="container" style="padding:2px; width:100%;">
         <div class="row">
-            <div class="col-7">
+            <div class="col-12 col-lg-7">
                 <div id="list">
                 </div>
             </div>
-            <div class="col-3">
+            <div class="col-6 col-lg-3">
                 <div id="count">
                 </div>
             </div>
-            <div class="col-2">
+            <div class="col-6 col-lg-2">
                 <div id="cosinger">
                 </div>
             </div>
@@ -57,6 +67,7 @@
                 <li><a href="https://music765plus.com/%E3%82%A2%E3%82%A4%E3%83%89%E3%83%AB%E3%83%9E%E3%82%B9%E3%82%BF%E3%83%BC_%E3%83%9F%E3%83%AA%E3%82%AA%E3%83%B3%E3%83%A9%E3%82%A4%E3%83%96%EF%BC%81_%E3%82%B7%E3%82%A2%E3%82%BF%E3%83%BC%E3%83%87%E3%82%A4%E3%82%BA%E3%81%AE%E3%82%A4%E3%83%99%E3%83%B3%E3%83%88">アイドルマスター楽曲メモ アイドルマスター ミリオンライブ！ シアターデイズのイベント(music765plus)</a></li>
             </ul>
         </li>
+        <li>セトリが同じ場合はひとつにまとめているので歌唱回数は不正確です</li>
         <li>集計対象のライブは以下の通りです<div id="live_list"></div></li>
     </ul>
 
